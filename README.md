@@ -5,7 +5,7 @@ Copyright Adam Musial-Bright, more at [LICENSE.md](LICENSE.md)
 
 There are two ways to build and deploy the Item API:
 - sam: a AWS framework to deploy an manage AWS infrastructure and maintenance of the app.
-- Lambda only: build and deploy the app from the `src/api` folder.
+- Lambda only: build and deploy the app from the `api` folder.
 
 
 # General Config
@@ -56,21 +56,21 @@ sam local invoke RestApiFunction  --event events/event.json
 # Lambda API only
 
 ## Build fastify app for AWS Lambda only
-The build will create a `src/api/build` and `src/api/dist` folder.
+The build will create a `api/build` and `api/dist` folder.
 ```
-cd src/api
+cd api
 npm run build
 ```
 
 ## Deploy
 Build the fastify app by as described above (`npm run build`).
-In the `src/api/dist` distribution folder there ist a `index.cjs` that can be deployed to AWS Lambda. I.e. upload it directly to the `Code` section or S3.
+In the `api/dist` distribution folder there ist a `index.cjs` that can be deployed to AWS Lambda. I.e. upload it directly to the `Code` section or S3.
 
 
 ## Develop
 Run a Fastify server
 ```
-cd src/api
+cd api
 node install
 npm run server
 ```
