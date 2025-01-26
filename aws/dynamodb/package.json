@@ -1,0 +1,27 @@
+{
+  "name": "dynamodb",
+  "version": "1.0.0",
+  "description": "AWS Dynamo DB management",
+  "main": "index.ts",
+  "author": "Adam Musial-Bright",
+  "license": "UNLICENSED",
+  "type": "module",
+  "scripts": {
+    "local-list-tables": "aws dynamodb list-tables --endpoint-url http://localhost:8000",
+    "local-scan": "aws dynamodb scan --endpoint-url http://localhost:8000 --table-name",
+    "db-reset": "npx tsx src/resetDb",
+    "db-start": "docker compose up",
+    "lint": "eslint '**/*.ts' '**/*.js' --fix"
+  },
+  "dependencies": {
+    "@aws-sdk/client-dynamodb": "^3.716.0"
+  },
+  "devDependencies": {
+    "eslint": "^9.17.0",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-prettier": "^5.2.1",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2",
+    "typescript-eslint": "^8.19.0"
+  }
+}
