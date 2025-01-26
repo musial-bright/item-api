@@ -1,15 +1,16 @@
 import Fastify, { FastifyInstance } from 'fastify'
 
-import fastrifyConfig from './config/fastifyConfig'
+import fastifyConfig from './config/fastifyConfig'
 // import { registerSwagger } from './config/swagger'
 
 import authHook from './hooks/authHook'
+import healthCheckRoute from './routes/healthCheckRoute'
 import infoRoute from './routes/infoRoute'
 import itemRoute from './routes/itemRoute'
 import errorHandler from './handler/errorHandler'
 
 const fastify: FastifyInstance = Fastify({
-  logger: fastrifyConfig.logger[fastrifyConfig.currentEnv],
+  logger: fastifyConfig.logger[fastifyConfig.currentEnv],
 })
 
 // Deactivate (uncomment) registerSwagger in case of AWS Lambda or SAM + Docker
@@ -17,8 +18,9 @@ const fastify: FastifyInstance = Fastify({
 
 fastify.addHook('preHandler', authHook)
 
-fastify.register(infoRoute, { prefix: fastrifyConfig.register.prefix })
-fastify.register(itemRoute, { prefix: fastrifyConfig.register.prefix })
+fastify.register(healthCheckRoute, { prefix: fastifyConfig.register.prefix })
+fastify.register(infoRoute, { prefix: fastifyConfig.register.prefix })
+fastify.register(itemRoute, { prefix: fastifyConfig.register.prefix })
 
 fastify.setErrorHandler(errorHandler)
 

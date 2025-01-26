@@ -4,7 +4,7 @@ import swagger from '@fastify/swagger'
 import swaggerUI from '@fastify/swagger-ui'
 import { FastifyInstance } from 'fastify'
 
-import fastrifyConfig from './fastifyConfig'
+import fastifyConfig from './fastifyConfig'
 
 const indexPath = '/docs'
 
@@ -56,7 +56,7 @@ const registerSwagger = (fastify: FastifyInstance) => {
   const swaggerUIRoute = async (fastify: FastifyInstance, _options: any) => {
     fastify.register(swaggerUI, SwaggerUIConfig)
   }
-  fastify.register(swaggerUIRoute, { prefix: fastrifyConfig.register.prefix })
+  fastify.register(swaggerUIRoute, { prefix: fastifyConfig.register.prefix })
 }
 
 export { SwaggerConfig, SwaggerUIConfig, registerSwagger }
