@@ -69,6 +69,9 @@ Resources:
           };
       Runtime: nodejs22.x
       Timeout: 60
+      MemorySize: 128
+      Architectures:
+        - arm64
 
   ItemApiUrl:
     Type: AWS::Lambda::Url
