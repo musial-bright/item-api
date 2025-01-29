@@ -40,18 +40,21 @@ Resources:
                   - 'logs:PutLogEvents'
                 Resource: 
                   Fn::Sub: "arn:aws:logs:${region}:${AWS::AccountId}:*"
-              - Effect: Allow
-                Action: lambda:InvokeFunctionUrl
-                Resource:
-                  Fn::Sub: "arn:aws:lambda:${region}:${AWS::AccountId}:function:${functionName}-${environment}"
-                Condition:
-                  StringEquals:
-                    "lambda:FunctionUrlAuthType": "NONE"
+
+  ItemApiLambdaFunctionUrlPublicPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName:
+        Ref: ItemApiFunction
+      Principal: '*'
+      Action: 'lambda:InvokeFunctionUrl'
+      FunctionUrlAuthType: NONE
 
   ItemApiFunction:
     Type: AWS::Lambda::Function
     Properties:
-      FunctionName: item-api-development
+      FunctionName: 
+        Fn::Sub: "${functionName}-${environment}"
       Handler: index.handler
       Role:
         Fn::GetAtt: LambdaExecutionRole.Arn
