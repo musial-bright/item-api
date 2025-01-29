@@ -1,5 +1,15 @@
 AWSTemplateFormatVersion: '2010-09-09'
 
+Parameters:
+  environment:
+    Type: String
+    Description: Environemnt for the Stack
+    Default: development
+  functionName:
+    Type: String
+    Description: Name of the lambda function
+    Default: item-api
+
 Resources:
   LambdaExecutionRole:
     Type: AWS::IAM::Role
@@ -25,6 +35,9 @@ Resources:
                   - 'logs:CreateLogStream'
                   - 'logs:PutLogEvents'
                 Resource: arn:aws:logs:*:*:*
+              - Effect: Allow
+                Action: lambda:InvokeFunctionUrl
+                Resource: !Sub "arn:aws:lambda:us-east-1:${AWS::AccountId}:function:${functionName}-${environment}"
 
   ItemApiFunction:
     Type: AWS::Lambda::Function
@@ -42,8 +55,18 @@ Resources:
               return response;
           };
       Runtime: nodejs22.x
+      Timeout: 60
+
+  ItemApiUrl:
+    Type: AWS::Lambda::Url
+    Properties:
+      TargetFunctionArn: !Ref ItemApiFunction
+      AuthType: NONE
 
 Outputs:
-  ApiUrl:
-    Description: 'ItemApiFunction ARN'
+  ItemApiFunction:
+    Description: 'ItemApiFunction Arn'
     Value: !GetAtt ItemApiFunction.Arn
+  ItemApiUrl:
+    Description: 'ItemApiUrl'
+    Value: !GetAtt ItemApiUrl.FunctionUrl
