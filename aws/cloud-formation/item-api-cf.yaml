@@ -1,6 +1,9 @@
 AWSTemplateFormatVersion: '2010-09-09'
 
 Parameters:
+  region:
+    Type: String
+    Default: us-east-1
   environment:
     Type: String
     Description: Environemnt for the Stack
@@ -23,7 +26,8 @@ Resources:
                 - lambda.amazonaws.com
             Action:
               - sts:AssumeRole
-      Path: /
+      ManagedPolicyArns:
+        - 'arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole'
       Policies:
         - PolicyName: root
           PolicyDocument:
@@ -34,17 +38,23 @@ Resources:
                   - 'logs:CreateLogGroup'
                   - 'logs:CreateLogStream'
                   - 'logs:PutLogEvents'
-                Resource: arn:aws:logs:*:*:*
+                Resource: 
+                  Fn::Sub: "arn:aws:logs:${region}:${AWS::AccountId}:*"
               - Effect: Allow
                 Action: lambda:InvokeFunctionUrl
-                Resource: !Sub "arn:aws:lambda:us-east-1:${AWS::AccountId}:function:${functionName}-${environment}"
+                Resource:
+                  Fn::Sub: "arn:aws:lambda:${region}:${AWS::AccountId}:function:${functionName}-${environment}"
+                Condition:
+                  StringEquals:
+                    "lambda:FunctionUrlAuthType": "NONE"
 
   ItemApiFunction:
     Type: AWS::Lambda::Function
     Properties:
       FunctionName: item-api-development
       Handler: index.handler
-      Role: !GetAtt LambdaExecutionRole.Arn
+      Role:
+        Fn::GetAtt: LambdaExecutionRole.Arn
       Code:
         ZipFile: |
           exports.handler = async (event) => {
@@ -60,13 +70,16 @@ Resources:
   ItemApiUrl:
     Type: AWS::Lambda::Url
     Properties:
-      TargetFunctionArn: !Ref ItemApiFunction
+      TargetFunctionArn:
+        Ref: ItemApiFunction
       AuthType: NONE
 
 Outputs:
   ItemApiFunction:
     Description: 'ItemApiFunction Arn'
-    Value: !GetAtt ItemApiFunction.Arn
+    Value:
+      Fn::GetAtt: ItemApiFunction.Arn
   ItemApiUrl:
     Description: 'ItemApiUrl'
-    Value: !GetAtt ItemApiUrl.FunctionUrl
+    Value:
+      Fn::GetAtt: ItemApiUrl.FunctionUrl
