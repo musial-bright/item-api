@@ -1,6 +1,7 @@
 # TODO
 
 √ .env
+API
 √ basic item storage
 - item content as json
 - item with content merge
@@ -10,4 +11,8 @@
 - user groups?
 √ authorizer
 √ health check endpoint
+AWS
+√ aws cloudformation for infrastructure
+√ deployment scripts
+- rotate filename/CF
 - aws cloudfront for dynamo db

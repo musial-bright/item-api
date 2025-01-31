@@ -88,10 +88,6 @@ Resources:
       AuthType: NONE
 
 Outputs:
-  ItemApiBucket:
-    Description: 'ItemApiBucket Arn'
-    Value:
-      Fn::GetAtt: ItemApiBucket.Arn
   ItemApiFunction:
     Description: 'ItemApiFunction Arn'
     Value:
