@@ -1,17 +1,24 @@
 AWSTemplateFormatVersion: '2010-09-09'
 
 Parameters:
-  region:
+  Region:
     Type: String
     Default: us-east-1
-  environment:
+  Environment:
     Type: String
     Description: Environemnt for the Stack
     Default: development
-  functionName:
+  FunctionName:
     Type: String
     Description: Name of the lambda function
     Default: item-api
+  DeploymentBucketName:
+    Type: String
+    Description: Bucket used for deployment and data storage
+    Default: cf-item-api-deployment
+  DeploymentFileName:
+    Type: String
+    Default: index.zip
 
 Resources:
   LambdaExecutionRole:
@@ -39,7 +46,7 @@ Resources:
                   - 'logs:CreateLogStream'
                   - 'logs:PutLogEvents'
                 Resource: 
-                  Fn::Sub: "arn:aws:logs:${region}:${AWS::AccountId}:*"
+                  Fn::Sub: "arn:aws:logs:${Region}:${AWS::AccountId}:*"
 
   ItemApiLambdaFunctionUrlPublicPermission:
     Type: AWS::Lambda::Permission
@@ -54,24 +61,24 @@ Resources:
     Type: AWS::Lambda::Function
     Properties:
       FunctionName: 
-        Fn::Sub: "${functionName}-${environment}"
+        Fn::Sub: "${FunctionName}-${Environment}"
       Handler: index.handler
       Role:
         Fn::GetAtt: LambdaExecutionRole.Arn
       Code:
-        ZipFile: |
-          exports.handler = async (event) => {
-              const response = {
-                  statusCode: 200,
-                  body: JSON.stringify('Hello from Lambda!'),
-              };
-              return response;
-          };
+        S3Bucket:
+          Ref: DeploymentBucketName
+        S3Key:
+          Ref: DeploymentFileName
       Runtime: nodejs22.x
       Timeout: 60
       MemorySize: 128
       Architectures:
         - arm64
+      Environment:
+        Variables:
+          Environment:
+            Fn::Sub: "${Environment}"
 
   ItemApiUrl:
     Type: AWS::Lambda::Url
@@ -81,6 +88,10 @@ Resources:
       AuthType: NONE
 
 Outputs:
+  ItemApiBucket:
+    Description: 'ItemApiBucket Arn'
+    Value:
+      Fn::GetAtt: ItemApiBucket.Arn
   ItemApiFunction:
     Description: 'ItemApiFunction Arn'
     Value:
