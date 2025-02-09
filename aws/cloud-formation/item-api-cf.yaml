@@ -7,18 +7,11 @@ Parameters:
   Environment:
     Type: String
     Description: Environemnt for the Stack
-    Default: development
+    Default: "development"
   FunctionName:
     Type: String
     Description: Name of the lambda function
     Default: item-api
-  DeploymentBucketName:
-    Type: String
-    Description: Bucket used for deployment and data storage
-    Default: cf-item-api-deployment
-  DeploymentFileName:
-    Type: String
-    Default: index.zip
 
 Resources:
   LambdaExecutionRole:
@@ -66,10 +59,14 @@ Resources:
       Role:
         Fn::GetAtt: LambdaExecutionRole.Arn
       Code:
-        S3Bucket:
-          Ref: DeploymentBucketName
-        S3Key:
-          Ref: DeploymentFileName
+        ZipFile: |
+          exports.handler = async (event) => {
+              const response = {
+                  statusCode: 200,
+                  body: JSON.stringify('item-api ready for deployment'),
+              };
+              return response;
+          };
       Runtime: nodejs22.x
       Timeout: 60
       MemorySize: 128

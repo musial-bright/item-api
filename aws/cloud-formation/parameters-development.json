@@ -10,9 +10,5 @@
   {
     "ParameterKey": "FunctionName",
     "ParameterValue": "item-api"
-  },
-  {
-    "ParameterKey": "DeploymentBucketName",
-    "ParameterValue": "cf-item-api-deployment"
   }
 ]
