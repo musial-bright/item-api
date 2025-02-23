@@ -4,34 +4,18 @@ BASEDIR=$(dirname "$0")
 PWD=$(pwd)
 FILE_PATH="$PWD/$BASEDIR"
 
+STAGE="$1"
+STACK_NAME=`sh $FILE_PATH/utils/stackname.sh $1`
+if [[ $STACK_NAME == "" ]]; then echo "Stage not supported. Exiting!"; exit 1; fi
+
 TEMPLATE_PATH="file://$FILE_PATH/../item-api-cf.yaml"
-PARAMETERS_PATH="file://$FILE_PATH/../parameters-development.json"
+PARAMETERS_PATH="file://$FILE_PATH/../parameters-$STAGE.json"
 
-STAGE="Development"
-
-if [[ "$1" == "staging" ]]
-then
-  STAGE="Staging"
-  PARAMETERS_PATH="file://$FILE_PATH/../parameters-staging.json"
-elif  [[ "$1" == "production" ]]
-then
-  STAGE="Production"
-  PARAMETERS_PATH="file://$FILE_PATH/../parameters-production.json"
-fi
-
-STACK_NAME="ItemApi${STAGE}"
-echo "Deploying stack '$STACK_NAME' for stage '${STAGE}'"
+echo "create CF stack '$STACK_NAME' for stage '${STAGE}'"
 echo "Continue [y/N]"
 read continue
-
-if [[ "${continue}" != "y" ]]
-then
-  echo "Deployment canceled."
-  exit 1
-fi
-
-echo "Starting cloud formation deployment..."
-
+if [[ "${continue}" != "y" ]]; then echo "Deployment canceled."; exit 1; fi
+echo "Creating CF stack..."
 
 aws cloudformation create-stack \
   --stack-name $STACK_NAME \
@@ -39,4 +23,4 @@ aws cloudformation create-stack \
   --parameters "$PARAMETERS_PATH" \
   --capabilities CAPABILITY_IAM
 
-echo "\nRun bin/stack-info.sh for status info"
+echo "\nRun 'bin/stack-info.sh $STAGE' for status info"

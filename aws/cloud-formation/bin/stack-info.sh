@@ -1,16 +1,12 @@
 #!/bin/sh
 
-STAGE="Development"
+BASEDIR=$(dirname "$0")
+PWD=$(pwd)
+FILE_PATH="$PWD/$BASEDIR"
 
-if [[ "$1" == "staging" ]]
-then
-  STAGE="Staging"
-elif  [[ "$1" == "production" ]]
-then
-  STAGE="Production"
-fi
-
-STACK_NAME="ItemApi${STAGE}"
+STAGE="$1"
+STACK_NAME=`sh $FILE_PATH/utils/stackname.sh $1`
+if [[ $STACK_NAME == "" ]]; then echo "Stage not supported. Exiting!"; exit 1; fi
 
 aws cloudformation describe-stack-events \
   --stack-name $STACK_NAME
