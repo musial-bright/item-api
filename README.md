@@ -30,7 +30,15 @@ You have three options here for the stage development|staging|production:
 ## Develop
 Run a Fastify server
 ```
+# run local server
 npm run server
+
+# run tests
+npm run test
+
+# run linter
+npm run lint
+npm run lint -- --fix
 ```
 
 ## Infrastructure management
