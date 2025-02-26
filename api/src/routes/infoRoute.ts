@@ -9,7 +9,7 @@ const routes = async (fastify: FastifyInstance, _options: any) => {
   fastify.get(
     indexPath,
     schema,
-    async (request: FastifyRequest, reply: FastifyReply) =>
+    async (_request: FastifyRequest, reply: FastifyReply) =>
       reply.send({
         info: {
           name: 'item-api',

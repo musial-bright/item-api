@@ -1,11 +1,10 @@
+import { envEnvironment } from './envVariables'
 import { EnvironemntType } from './typesConfig'
 
 export const dynamoDbUrl = 'http://localhost:8000' // TODO: provide from .env
 
 export const currentEnvironemnt = (): EnvironemntType => {
-  const environemnt = process.env.ENVIRONMENT as string
-
-  switch (environemnt) {
+  switch (envEnvironment()) {
     case 'development':
       return 'development'
     case 'test':
@@ -15,6 +14,6 @@ export const currentEnvironemnt = (): EnvironemntType => {
     case 'production':
       return 'production'
     default:
-      return 'development'
+      throw new Error('envEnvironment() process.env.ENVIRONMENT is empty')
   }
 }
