@@ -1,8 +1,6 @@
 import { envEnvironment } from './envVariables'
 import { EnvironemntType } from './typesConfig'
 
-export const dynamoDbUrl = 'http://localhost:8000' // TODO: provide from .env
-
 export const currentEnvironemnt = (): EnvironemntType => {
   switch (envEnvironment()) {
     case 'development':

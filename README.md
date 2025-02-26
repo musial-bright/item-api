@@ -72,14 +72,20 @@ Example:
 curl -X POST http://localhost:3000/api/item/test-item \
      -H 'Content-Type: application/json' \
      -H 'Accept: application/json' \
+     -H 'Authorization: <auth token>' \
      -d '{ "content": { "desc": "hello item", "items": [1]} }'
 
 curl -X PATCH http://localhost:3000/api/item/test-item/<ID> \
      -H 'Content-Type: application/json' \
      -H 'Accept: application/json' \
+     -H 'Authorization: <auth token>' \
      -d '{ "content": { "desc": "some object data", "items": [1, 2, 3, "four"]} }'
 
-curl -X GET http://localhost:3000/api/item/test-item
+curl -X GET http://localhost:3000/api/item/test-item \
+     -H 'Content-Type: application/json' \
+     -H 'Accept: application/json' \
+     -H 'Authorization: <auth token>'
+     
 ```
 
 The API swagger documentation is available at http://localhost:3000/docs

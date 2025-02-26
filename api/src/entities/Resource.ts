@@ -9,10 +9,8 @@ import {
 import { v4 as uuidv4 } from 'uuid'
 
 import { ResourceType } from './types'
-import { dynamoDbUrl } from '../config/variableConfig'
 import { tableName } from '../utils/tableName'
-
-const endpoint = dynamoDbUrl
+import { envDynamoDbEndpoint } from '../config/envVariables'
 
 class Resource {
   client: DynamoDBClient
@@ -21,7 +19,7 @@ class Resource {
 
   constructor(tableNameSuffix: string) {
     this.client = new DynamoDBClient({
-      endpoint: endpoint,
+      endpoint: envDynamoDbEndpoint(),
     })
     this.docClient = DynamoDBDocumentClient.from(this.client)
     this.tableName = tableName({ tableNameSuffix: tableNameSuffix })

@@ -11,6 +11,7 @@ API
 - user groups?
 √ authorizer
 √ health check endpoint
+√ api key for easier dev access
 AWS
 √ aws cloudformation for infrastructure
 √ deployment scripts
