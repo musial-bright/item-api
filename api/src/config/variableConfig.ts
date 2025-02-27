@@ -1,4 +1,3 @@
-import { InternalServerError } from '../utils/errors'
 import { envEnvironment } from './envVariables'
 import { EnvironemntType } from './typesConfig'
 
