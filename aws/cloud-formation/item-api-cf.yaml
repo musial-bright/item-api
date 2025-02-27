@@ -6,7 +6,7 @@ Parameters:
     Default: us-east-1
   Environment:
     Type: String
-    Description: Environemnt for the Stack
+    Description: Environment for the Stack
     Default: "development"
   FunctionName:
     Type: String
@@ -29,7 +29,7 @@ Resources:
       ManagedPolicyArns:
         - 'arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole'
       Policies:
-        - PolicyName: root
+        - PolicyName: log-write
           PolicyDocument:
             Version: '2012-10-17'
             Statement:
@@ -40,6 +40,20 @@ Resources:
                   - 'logs:PutLogEvents'
                 Resource: 
                   Fn::Sub: "arn:aws:logs:${Region}:${AWS::AccountId}:*"
+        - PolicyName: dynamodb-read-write
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Action:
+                  - dynamodb:Query
+                  - dynamodb:Scan
+                  - dynamodb:GetItem
+                  - dynamodb:DeleteItem
+                  - dynamodb:PutItem
+                  - dynamodb:Batch*
+                Resource:
+                  Fn::Sub: "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${FunctionName}-${Environment}-*"
+                Effect: Allow
 
   ItemApiLambdaFunctionUrlPublicPermission:
     Type: AWS::Lambda::Permission
@@ -74,8 +88,10 @@ Resources:
         - arm64
       Environment:
         Variables:
-          Environment:
+          ENVIRONMENT:
             Fn::Sub: "${Environment}"
+          API_KEY_AUTH:
+            Fn::Sub: "change-secret"
 
   ItemApiUrl:
     Type: AWS::Lambda::Url
@@ -83,6 +99,50 @@ Resources:
       TargetFunctionArn:
         Ref: ItemApiFunction
       AuthType: NONE
+
+  DynamoDBItems:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName:
+        Fn::Sub: "${FunctionName}-${Environment}-item"
+      AttributeDefinitions:
+        - AttributeName: "id"
+          AttributeType: "S"
+        - AttributeName: "name"
+          AttributeType: "S"
+        - AttributeName: "user_id"
+          AttributeType: "S"
+      KeySchema:
+        - AttributeName: "id"
+          KeyType: "HASH"
+      GlobalSecondaryIndexes:
+        - 
+          IndexName: 
+            Fn::Sub: "${FunctionName}-${Environment}-item-by-name"
+          KeySchema:
+            - AttributeName: "name"
+              KeyType: "HASH"
+          Projection:
+            ProjectionType: "ALL"
+          # ProvisionedThroughput:
+          #   ReadCapacityUnits: 1
+          #   WriteCapacityUnits: 1
+        - 
+          IndexName:
+            Fn::Sub: "${FunctionName}-${Environment}-item-by-user-id"
+          KeySchema:
+            - AttributeName: "user_id"
+              KeyType: "HASH"
+          Projection:
+            ProjectionType: "ALL"
+          # ProvisionedThroughput:
+          #   ReadCapacityUnits: 1
+          #   WriteCapacityUnits: 1
+      # ProvisionedThroughput:
+      #   ReadCapacityUnits: 1
+      #   WriteCapacityUnits: 1
+      # BillingMode: "PAY_PER_REQUEST"
+      BillingMode: "PAY_PER_REQUEST"
 
 Outputs:
   ItemApiFunction:
