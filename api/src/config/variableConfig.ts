@@ -1,3 +1,4 @@
+import { InternalServerError } from '../utils/errors'
 import { envEnvironment } from './envVariables'
 import { EnvironemntType } from './typesConfig'
 
@@ -12,6 +13,7 @@ export const currentEnvironemnt = (): EnvironemntType => {
     case 'production':
       return 'production'
     default:
-      throw new Error('envEnvironment() process.env.ENVIRONMENT is empty')
+      console.error('envEnvironment() process.env.ENVIRONMENT is empty')
+      return 'development'
   }
 }

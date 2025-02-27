@@ -11,18 +11,23 @@ const envEnvironmentMock = envEnvironment as jest.MockedFunction<
 
 describe('currentEnvironemnt', () => {
   describe('when process.env.ENVIRONMENT is empty', () => {
-    it('throws error', () => {
+    it('has fallback "development" environment', () => {
       envEnvironmentMock.mockImplementation(() => '')
 
-      expect(() => currentEnvironemnt()).toThrow(Error)
-      expect(() => currentEnvironemnt()).toThrow(
-        'envEnvironment() process.env.ENVIRONMENT is empty',
-      )
+      expect(currentEnvironemnt()).toEqual('development')
+    })
+  })
+
+  describe('when process.env.ENVIRONMENT is set to an unsupported value', () => {
+    it('has fallback "development" environment', () => {
+      envEnvironmentMock.mockImplementation(() => 'unsupported value')
+
+      expect(currentEnvironemnt()).toEqual('development')
     })
   })
 
   describe('when process.env.ENVIRONMENT is set', () => {
-    it('throws error when process.env.ENVIRONMENT is empty', () => {
+    it('has correct environment', () => {
       envEnvironmentMock.mockImplementation(() => 'test')
 
       expect(currentEnvironemnt()).toEqual('test')

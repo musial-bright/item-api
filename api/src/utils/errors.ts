@@ -11,3 +11,7 @@ export const UnprocessableContentError = () => {
 export const UnauthorizedError = () => {
   return createError(401, 'Unauthorized')
 }
+
+export const InternalServerError = ({ message }: { message: string }) => {
+  return createError(500, 'InternalServerError', { message })
+}
