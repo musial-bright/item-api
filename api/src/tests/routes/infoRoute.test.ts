@@ -1,5 +1,6 @@
 import { expect, describe, it, jest } from '@jest/globals'
 
+import fastifyConfig from '../../config/fastifyConfig'
 import service from '../../service'
 
 jest.mock('../../config/variableConfig', () => {
@@ -15,11 +16,11 @@ jest.mock('../../service/authorizationService', () => {
 })
 
 describe('routes', () => {
-  describe('/api/info', () => {
+  describe(`/${fastifyConfig.register.prefix}/info`, () => {
     it('gets 200 response code', async () => {
       const response = await service.inject({
         method: 'GET',
-        url: '/api/info',
+        url: `/${fastifyConfig.register.prefix}/info`,
       })
 
       const body = JSON.parse(response.body)

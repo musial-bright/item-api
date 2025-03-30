@@ -19,7 +19,7 @@ const config: FastifyConfig = {
     test: false,
   },
   register: {
-    prefix: 'api',
+    prefix: 'item-api',
   },
 }
 

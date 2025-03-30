@@ -1,9 +1,10 @@
 import { currentEnvironemnt } from '../config/variableConfig'
+import fastifyConfig from '../config/fastifyConfig'
 
 const stage = currentEnvironemnt()
 
 export const tableName = ({ tableNameSuffix }: { tableNameSuffix: string }) => {
-  return `item-api-${stage}-${tableNameSuffix}`
+  return `${fastifyConfig.register.prefix}-${stage}-${tableNameSuffix}`
 }
 
 export const tableIndexName = ({
