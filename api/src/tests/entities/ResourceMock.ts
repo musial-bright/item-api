@@ -6,6 +6,7 @@ export type ResourceTypeMock = {
   id: string
   name: string
   content?: ResourceType
+  user_id?: string
 }
 
 export type TablesType = Array<{

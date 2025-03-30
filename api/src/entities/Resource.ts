@@ -63,9 +63,13 @@ class Resource {
   }
 
   async create({ attrs }: { attrs: ResourceType }) {
-    const item = {
+    const { name, content, user_id } = attrs
+
+    const item: ResourceType = {
       id: uuidv4(),
-      ...attrs,
+      name,
+      content,
+      user_id,
     }
 
     const command = new PutCommand({
@@ -84,10 +88,12 @@ class Resource {
       return
     }
 
-    const updatedItem = {
+    const { content } = attrs
+
+    const updatedItem: ResourceType = {
       ...existingItem,
-      id: existingItem.id as string,
-      ...attrs,
+      content,
+      id: existingItem.id as string, // make sure ID stays the same
     }
 
     const command = new PutCommand({

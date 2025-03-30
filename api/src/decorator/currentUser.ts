@@ -1,3 +1,5 @@
+import { FastifyRequest } from 'fastify'
+
 export type UserinfoType = {
   aud: string[]
   email: string
@@ -22,4 +24,8 @@ export type CurrentUserType = {
 export const currentUser: CurrentUserType = {
   identifier: undefined,
   userinfo: undefined,
+}
+
+export const getCurrentUser = ({ request }: { request: FastifyRequest }) => {
+  return request.currentUser
 }

@@ -16,6 +16,9 @@ const schemaItem = {
       type: 'string',
     },
     content: schemaContent,
+    user_id: {
+      type: 'string',
+    },
     createdAt: {
       type: 'number',
     },
@@ -49,6 +52,19 @@ export const schemaGetAll: RouteShorthandOptions = {
 }
 
 export const schemaPost: RouteShorthandOptions = {
+  schema: {
+    body: {
+      type: 'object',
+      properties: {
+        content: schemaItem.properties.content,
+      },
+      required: ['content'],
+    },
+    response: schemaGet.schema?.response,
+  },
+}
+
+export const schemaPatch: RouteShorthandOptions = {
   schema: {
     body: {
       type: 'object',

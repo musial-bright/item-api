@@ -1,9 +1,10 @@
 import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
 
-import { schemaGet, schemaGetAll, schemaPost } from './itemSchema'
+import { schemaGet, schemaGetAll, schemaPatch, schemaPost } from './itemSchema'
 import { NotFoundError } from '../utils/errors'
 import { ResourceType } from '../entities/types'
 import Item from '../entities/Item'
+import { getCurrentUser } from '../decorator/currentUser'
 
 const indexPath = '/item/:name'
 const idPath = [indexPath, ':id'].join('/')
@@ -18,6 +19,8 @@ const routes = async (fastify: FastifyInstance, _options: any) => {
     async (request: FastifyRequest, reply: FastifyReply) => {
       const { name } = request.params as Record<string, string>
 
+      // TODO: const currentUser = getCurrentUser({ request })
+
       const item = new Item(name)
       const result = await item.queryBy({
         indexNameSuffix: 'by-name',
@@ -25,6 +28,8 @@ const routes = async (fastify: FastifyInstance, _options: any) => {
         attributeValue: name,
         condition: '=',
       })
+
+      // TODO: introduce filter for now
 
       return reply.send(result)
     },
@@ -34,6 +39,8 @@ const routes = async (fastify: FastifyInstance, _options: any) => {
     idPath,
     schemaGet,
     async (request: FastifyRequest, reply: FastifyReply) => {
+      const currentUser = getCurrentUser({ request })
+
       const { id, name } = request.params as Record<string, string>
 
       const item = new Item(name)
@@ -51,6 +58,8 @@ const routes = async (fastify: FastifyInstance, _options: any) => {
     indexPath,
     schemaPost,
     async (request: FastifyRequest, reply: FastifyReply) => {
+      const currentUser = getCurrentUser({ request })
+
       const { name } = request.params as Record<string, string>
       const { content } = request.body as BodyType
 
@@ -59,6 +68,7 @@ const routes = async (fastify: FastifyInstance, _options: any) => {
         attrs: {
           name: name,
           content: content,
+          user_id: currentUser?.identifier,
         },
       })
 
@@ -70,8 +80,10 @@ const routes = async (fastify: FastifyInstance, _options: any) => {
 
   fastify.patch(
     idPath,
-    schemaGet,
+    schemaPatch,
     async (request: FastifyRequest, reply: FastifyReply) => {
+      const currentUser = getCurrentUser({ request })
+
       const { name, id } = request.params as Record<string, string>
       const { content } = request.body as BodyType
 
@@ -96,9 +108,12 @@ const routes = async (fastify: FastifyInstance, _options: any) => {
     idPath,
     schemaGet,
     async (request: FastifyRequest, reply: FastifyReply) => {
+      const currentUser = getCurrentUser({ request })
+
       const { id, name } = request.params as Record<string, string>
 
       const item = new Item(name)
+      // TODO: provide user_id
       const result = await item.delete({ id })
 
       if (!result) {

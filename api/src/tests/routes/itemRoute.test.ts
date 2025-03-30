@@ -21,6 +21,9 @@ jest.mock('../../service/authorizationService', () => {
 })
 
 const uuid0 = '2700d2a7-90b1-4776-a0a2-bd4944b0e29e'
+const uuid1 = '123-no-one'
+
+const userId0 = 'stanley-user-id'
 
 const itemName = 'some-item'
 
@@ -41,6 +44,16 @@ const tablesData: TablesType = [
           desc: 'test content 0',
           items: [1, 2, 'three'],
         },
+        user_id: 'api_key',
+      },
+      {
+        id: uuid1,
+        name: itemName,
+        content: {
+          desc: 'test content 0',
+          items: [1, 2, 'three'],
+        },
+        user_id: userId0,
       },
     ],
   },
@@ -219,6 +232,7 @@ describe('routes', () => {
         id: body.id,
         name: itemName,
         content: payload.content,
+        user_id: 'api_key',
       }
       expect(body).toEqual(expectedPostBody)
     })

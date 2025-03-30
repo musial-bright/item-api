@@ -6,4 +6,5 @@ export type ItemType = {
   // eslint-disable-next-line  @typescript-eslint/no-explicit-any
   content: any
   id?: string
+  user_id?: string
 }
