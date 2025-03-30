@@ -1,14 +1,21 @@
 import { envApiKeyAuth } from '../config/envVariables'
-import AbstractAuthorizer from './AbstractAuthorizer'
+import AbstractAuthorizer, { AuthorizationResult } from './AbstractAuthorizer'
 
 class ApiKeyAuthorizer extends AbstractAuthorizer {
-  isAuthroized() {
+  async isAuthroized(): Promise<AuthorizationResult> {
     const apiKeyAuth = envApiKeyAuth()
     if (!apiKeyAuth) {
-      return true
+      return {
+        success: false,
+        message: 'no auth key configured',
+      }
     }
 
-    return apiKeyAuth === this.headers.authorization
+    const authroized = apiKeyAuth === this.headers.authorization
+    return {
+      success: authroized,
+      message: authroized ? '' : 'not authorized',
+    }
   }
 }
 

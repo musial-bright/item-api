@@ -9,7 +9,7 @@ const authHook = async (request: FastifyRequest, _reply: FastifyReply) => {
     return
   }
 
-  await authorizationGuard(request.headers)
+  await authorizationGuard(request)
 }
 
 export default authHook

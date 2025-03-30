@@ -8,8 +8,8 @@ export const UnprocessableContentError = () => {
   return createError(422, 'Unprocessable Content')
 }
 
-export const UnauthorizedError = () => {
-  return createError(401, 'Unauthorized')
+export const UnauthorizedError = ({ message }: { message: string }) => {
+  return createError(401, 'Unauthorized', { message })
 }
 
 export const InternalServerError = ({ message }: { message: string }) => {

@@ -1,7 +1,8 @@
 import Fastify, { FastifyInstance } from 'fastify'
 
 import fastifyConfig from './config/fastifyConfig'
-// import { registerSwagger } from './config/swagger'
+
+import { CurrentUserType } from './decorator/currentUser'
 
 import authHook from './hooks/authHook'
 import healthCheckRoute from './routes/healthCheckRoute'
@@ -15,6 +16,14 @@ const fastify: FastifyInstance = Fastify({
 
 // Deactivate (uncomment) registerSwagger in case of AWS Lambda or SAM + Docker
 // registerSwagger(fastify)
+
+declare module 'fastify' {
+  interface FastifyRequest {
+    currentUser: CurrentUserType | undefined
+  }
+}
+
+fastify.decorateRequest('currentUser', undefined)
 
 fastify.addHook('preHandler', authHook)
 
