@@ -6,12 +6,16 @@ API
 - item content as json
 - item with content merge
 - item definitions (in db)
-- user
-- user linked with item
-- user groups?
+- user via id
 √ authorizer
 √ health check endpoint
 √ api key for easier dev access
+
+Config and quota
+- item name definition
+- ttl
+- count per item name
+
 AWS
 √ aws cloudformation for infrastructure
 √ deployment scripts

@@ -44,8 +44,8 @@ const routes = async (fastify: FastifyInstance, _options: any) => {
       const { id, name } = request.params as Record<string, string>
 
       const item = new Item(name)
-      const result = await item.get({ id })
 
+      const result = await item.get({ id })
       if (!result) {
         throw NotFoundError()
       }

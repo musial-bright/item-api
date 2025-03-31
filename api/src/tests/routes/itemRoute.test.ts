@@ -4,9 +4,8 @@ import fastifyConfig from '../../config/fastifyConfig'
 import service from '../../service'
 import Resource from '../../entities/Resource'
 
-import ResourceMock, { TablesType } from '../entities/ResourceMock'
+import ResourceMock, { ResourceTypeMock } from '../entities/ResourceMock'
 import { ResourceType } from '../../entities/types'
-import { tableIndexName, tableName } from '../../utils/tableName'
 
 jest.mock('../../config/variableConfig', () => {
   return {
@@ -21,60 +20,25 @@ jest.mock('../../service/authorizationService', () => {
 })
 
 const uuid0 = '2700d2a7-90b1-4776-a0a2-bd4944b0e29e'
-const uuid1 = '123-no-one'
 
-const userId0 = 'stanley-user-id'
+const itemName0 = 'some-item'
 
-const itemName = 'some-item'
-
-const tablesData: TablesType = [
+const items: ResourceTypeMock[] = [
   {
-    tableNameSuffix: itemName,
-    indexNameSuffix: 'by-name',
-    tableName: tableName({ tableNameSuffix: itemName }),
-    indexName: tableIndexName({
-      tableNameSuffix: itemName,
-      indexNameSuffix: 'by-name',
-    }),
-    items: [
-      {
-        id: uuid0,
-        name: itemName,
-        content: {
-          desc: 'test content 0',
-          items: [1, 2, 'three'],
-        },
-        user_id: 'api_key',
-      },
-      {
-        id: uuid1,
-        name: itemName,
-        content: {
-          desc: 'test content 0',
-          items: [1, 2, 'three'],
-        },
-        user_id: userId0,
-      },
-    ],
-  },
-  {
-    tableNameSuffix: 'user',
-    indexNameSuffix: 'by-email',
-    tableName: tableName({ tableNameSuffix: 'user' }),
-    indexName: tableIndexName({
-      tableNameSuffix: itemName,
-      indexNameSuffix: 'by-name',
-    }),
-    items: [
-      {
-        id: 'some-user-id',
-        name: 'not necessary for user',
-      },
-    ],
+    id: uuid0,
+    name: itemName0,
+    content: {
+      desc: 'test content 0',
+      items: [1, 2, 'three'],
+    },
   },
 ]
 
-const resourceMock = new ResourceMock(tablesData)
+let resourceMock: ResourceMock = new ResourceMock({
+  tableNameSuffix: itemName0,
+  indexNameSuffix: 'by-name',
+  items,
+})
 
 beforeAll(() => {
   jest
@@ -99,16 +63,19 @@ beforeAll(() => {
         })
       },
     )
+
   jest
     .spyOn(Resource.prototype, 'get')
     .mockImplementation(async ({ id }: { id: string }) => {
       return await resourceMock.get({ id })
     })
+
   jest
     .spyOn(Resource.prototype, 'create')
     .mockImplementation(async ({ attrs }: { attrs: ResourceType }) => {
       return await resourceMock.create({ attrs })
     })
+
   jest
     .spyOn(Resource.prototype, 'update')
     .mockImplementation(
@@ -116,6 +83,7 @@ beforeAll(() => {
         return await resourceMock.update({ id, attrs })
       },
     )
+
   jest
     .spyOn(Resource.prototype, 'delete')
     .mockImplementation(async ({ id }: { id: string }) => {
@@ -124,66 +92,67 @@ beforeAll(() => {
 })
 
 afterEach(() => {
+  resourceMock = new ResourceMock({
+    tableNameSuffix: itemName0,
+    indexNameSuffix: 'by-name',
+    items,
+  })
   jest.clearAllMocks()
 })
 
 describe('routes', () => {
-  describe(`GET /${fastifyConfig.register.prefix}/item/some-item`, () => {
+  describe(`GET /${fastifyConfig.register.prefix}/item/${itemName0}`, () => {
     it('get all items', async () => {
       const response = await service.inject({
         method: 'GET',
-        url: `/${fastifyConfig.register.prefix}/item/some-item`,
+        url: `/${fastifyConfig.register.prefix}/item/${itemName0}`,
       })
       expect(response.statusCode).toBe(200)
 
       const body = JSON.parse(response.body)
-      const expectedItems = tablesData.filter(
-        (t) => t.tableNameSuffix === itemName,
-      )[0].items
+      const expectedItems = items.filter((i) => i.name === itemName0)
       expect(body).toEqual(Object.values(expectedItems))
     })
   })
 
-  describe(`GET /${fastifyConfig.register.prefix}/item/some-item/not-existing-id`, () => {
+  describe(`GET /${fastifyConfig.register.prefix}/item/${itemName0}/not-existing-id`, () => {
     it('get fails with 404', async () => {
       const response = await service.inject({
         method: 'GET',
-        url: '/${fastifyConfig.register.prefix}/item/some-item/not-existing-id',
+        url: `/${fastifyConfig.register.prefix}/item/${itemName0}/not-existing-id`,
       })
       expect(response.statusCode).toBe(404)
     })
   })
 
-  describe(`GET /${fastifyConfig.register.prefix}/item/some-item/${uuid0}`, () => {
+  describe(`GET /${fastifyConfig.register.prefix}/item/${itemName0}/${uuid0}`, () => {
     it('gets specific item', async () => {
       const response = await service.inject({
         method: 'GET',
-        url: `/${fastifyConfig.register.prefix}/item/some-item/${uuid0}`,
+        url: `/${fastifyConfig.register.prefix}/item/${itemName0}/${uuid0}`,
       })
       expect(response.statusCode).toBe(200)
 
       const body = JSON.parse(response.body)
-      const item = tablesData
-        .filter((t) => t.tableNameSuffix === itemName)[0]
-        .items.filter((i) => i.id === uuid0)[0]
+      const item = items.find((i) => i.id === uuid0)
       expect(body).toEqual(item)
     })
   })
 
-  describe(`POST /${fastifyConfig.register.prefix}/item/some-item`, () => {
+  describe(`POST /${fastifyConfig.register.prefix}/item/${itemName0}`, () => {
     it('creates new item', async () => {
       const payload = {
         content: { desc: 'new content', attribute: 1234567890 },
       }
       const responsePost = await service.inject({
         method: 'POST',
-        url: `/${fastifyConfig.register.prefix}/item/some-item`,
+        url: `/${fastifyConfig.register.prefix}/item/${itemName0}`,
         payload: payload,
       })
       expect(responsePost.statusCode).toBe(201)
 
       const expectedPostBody = {
-        name: itemName,
+        name: itemName0,
         content: payload.content,
       }
       const { id, name, content } = JSON.parse(responsePost.body)
@@ -192,7 +161,7 @@ describe('routes', () => {
 
       const responseGet = await service.inject({
         method: 'GET',
-        url: `/${fastifyConfig.register.prefix}/item/some-item/${id}`,
+        url: `/${fastifyConfig.register.prefix}/item/${itemName0}/${id}`,
       })
       expect(responseGet.statusCode).toBe(200)
 
@@ -204,12 +173,12 @@ describe('routes', () => {
     })
   })
 
-  describe(`PATCH /${fastifyConfig.register.prefix}/item/some-item/not-existing-id`, () => {
+  describe(`PATCH /${fastifyConfig.register.prefix}/item/${itemName0}/not-existing-id`, () => {
     it('delete fails with 404', async () => {
       const payload = { content: { desc: 'updated-content', something: 9 } }
       const responsePatch = await service.inject({
         method: 'PATCH',
-        url: `/${fastifyConfig.register.prefix}/item/some-item/not-existing-id`,
+        url: `/${fastifyConfig.register.prefix}/item/${itemName0}/not-existing-id`,
         payload: payload,
       })
 
@@ -217,45 +186,44 @@ describe('routes', () => {
     })
   })
 
-  describe(`PATCH /${fastifyConfig.register.prefix}/item/some-item/${uuid0}`, () => {
+  describe(`PATCH /${fastifyConfig.register.prefix}/item/${itemName0}/${uuid0}`, () => {
     it('updates content', async () => {
       const payload = { content: { desc: 'updated-content' } }
       const responsePatch = await service.inject({
         method: 'PATCH',
-        url: `/${fastifyConfig.register.prefix}/item/some-item/${uuid0}`,
+        url: `/${fastifyConfig.register.prefix}/item/${itemName0}/${uuid0}`,
         payload: payload,
       })
+
       expect(responsePatch.statusCode).toBe(200)
 
       const body = JSON.parse(responsePatch.body)
       const expectedPostBody = {
         id: body.id,
-        name: itemName,
+        name: itemName0,
         content: payload.content,
-        user_id: 'api_key',
       }
       expect(body).toEqual(expectedPostBody)
     })
   })
 
-  describe(`DELETE /${fastifyConfig.register.prefix}/item/some-item/not-existing-id`, () => {
+  describe(`DELETE /${fastifyConfig.register.prefix}/item/${itemName0}/not-existing-id`, () => {
     it('deletes fails with 404', async () => {
       const responseDelete = await service.inject({
         method: 'DELETE',
-        url: `/${fastifyConfig.register.prefix}/item/some-item/not-existing-id`,
+        url: `/${fastifyConfig.register.prefix}/item/${itemName0}/not-existing-id`,
       })
 
       expect(responseDelete.statusCode).toBe(404)
     })
   })
 
-  describe(`DELETE /${fastifyConfig.register.prefix}/item/some-item/${uuid0}`, () => {
+  describe(`DELETE /${fastifyConfig.register.prefix}/item/${itemName0}/${uuid0}`, () => {
     it('deletes item', async () => {
       const responseDelete = await service.inject({
         method: 'DELETE',
-        url: `/${fastifyConfig.register.prefix}/item/some-item/${uuid0}`,
+        url: `/${fastifyConfig.register.prefix}/item/${itemName0}/${uuid0}`,
       })
-
       expect(responseDelete.statusCode).toBe(204)
 
       const body = responseDelete.body
@@ -263,9 +231,8 @@ describe('routes', () => {
 
       const responseGet = await service.inject({
         method: 'GET',
-        url: `/${fastifyConfig.register.prefix}/item/some-item/${uuid0}`,
+        url: `/${fastifyConfig.register.prefix}/item/${itemName0}/${uuid0}`,
       })
-
       expect(responseGet.statusCode).toBe(404)
     })
   })

@@ -1,6 +1,7 @@
 import { v4 as uuidv4 } from 'uuid'
 
 import { ResourceType } from '../../entities/types'
+import { tableIndexName, tableName } from '../../utils/tableName'
 
 export type ResourceTypeMock = {
   id: string
@@ -9,19 +10,36 @@ export type ResourceTypeMock = {
   user_id?: string
 }
 
-export type TablesType = Array<{
+export type TablesType = {
   tableNameSuffix: string
   indexNameSuffix: string
   tableName: string
   indexName: string
   items: ResourceTypeMock[]
-}>
+}
 
 class ResourceMock {
-  tables: TablesType
+  table: TablesType
 
-  constructor(tables: TablesType) {
-    this.tables = tables
+  constructor({
+    tableNameSuffix,
+    indexNameSuffix,
+    items,
+  }: {
+    tableNameSuffix: string
+    indexNameSuffix: string
+    items: ResourceTypeMock[]
+  }) {
+    this.table = {
+      tableName: tableName({ tableNameSuffix: tableNameSuffix }),
+      tableNameSuffix: tableNameSuffix,
+      indexName: tableIndexName({
+        tableNameSuffix: tableNameSuffix,
+        indexNameSuffix: indexNameSuffix,
+      }),
+      indexNameSuffix: indexNameSuffix,
+      items,
+    }
   }
 
   async queryBy({
@@ -35,24 +53,24 @@ class ResourceMock {
     attributeValue: string
     condition: string
   }) {
-    const _unused = [attributeName, attributeValue, condition]
-    const table = this.tables.filter(
-      (t) => t.indexNameSuffix === indexNameSuffix,
-    )[0]
-    if (!table) {
+    if (!['='].includes(condition)) {
       return []
     }
 
-    return table.items
+    if (indexNameSuffix === 'by-name' && attributeName === 'name') {
+      return this.table.items.filter((item) => item.name === attributeValue)
+    } else if (
+      indexNameSuffix === 'by-user-id' &&
+      attributeName === 'user_id'
+    ) {
+      return this.table.items.filter((item) => item.user_id === attributeValue)
+    }
+
+    return []
   }
 
   async get({ id }: { id: string }): Promise<ResourceTypeMock | undefined> {
-    let allItems: ResourceTypeMock[] = []
-    this.tables.forEach((table) => {
-      allItems = [...allItems, ...table.items]
-    })
-
-    return allItems.filter((i) => i.id === id)[0]
+    return this.table.items.find((item) => item.id === id)
   }
 
   async create({ attrs }: { attrs: ResourceType }) {
@@ -62,53 +80,35 @@ class ResourceMock {
       content: attrs.content,
       name,
     }
-
-    this.tables.forEach((t) => {
-      if (t.tableNameSuffix === name) {
-        t.items.push(item)
-      }
-    })
+    this.table.items.push(item)
 
     return item
   }
 
   async update({ id, attrs }: { id: string; attrs: ResourceType }) {
-    const name = attrs.name as string
-    let updatedItem: ResourceTypeMock | undefined
+    const index = this.table.items.findIndex((item) => item.id === id)
+    if (index === -1) {
+      return
+    }
 
-    this.tables.forEach((t) => {
-      if (t.tableNameSuffix === name) {
-        t.items = t.items.map((i): ResourceTypeMock => {
-          if (i.id === id) {
-            updatedItem = {
-              ...i,
-              content: attrs.content,
-            }
-            return updatedItem
-          } else {
-            return i
-          }
-        })
-      }
-    })
+    const updatedItem = {
+      ...this.table.items[index],
+      content: attrs.content,
+    }
+    this.table.items[index] = { ...updatedItem }
 
     return updatedItem
   }
 
   async delete({ id }: { id: string }) {
-    let deletedItem = false
+    const index = this.table.items.findIndex((i) => i.id === id)
+    if (index === -1) {
+      return false
+    }
 
-    this.tables.map((t) => {
-      const index = t.items.findIndex((i) => i.id === id)
-      if (index >= 0) {
-        t.items.splice(index, 1)
-        deletedItem = true
-      }
+    this.table.items.splice(index, 1)
 
-      return t
-    })
-
-    return deletedItem
+    return true
   }
 }
 
