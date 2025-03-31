@@ -12,9 +12,9 @@ jest.mock('../../config/variableConfig', () => {
 
 jest.mock('../../service/authorizationService', () => {
   return {
-    authorizationGuard: () => {
+    authorizationGuard: jest.fn().mockImplementation(() => {
       throw UnauthorizedError({ message: 'Unauthorized' })
-    },
+    }),
   }
 })
 

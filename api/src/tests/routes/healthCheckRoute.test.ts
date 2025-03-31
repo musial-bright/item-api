@@ -3,10 +3,19 @@ import { expect, describe, it, jest } from '@jest/globals'
 import fastifyConfig from '../../config/fastifyConfig'
 
 import service from '../../service'
+import { UnauthorizedError } from '../../utils/errors'
 
 jest.mock('../../config/variableConfig', () => {
   return {
     currentEnvironemnt: jest.fn().mockReturnValue('test'),
+  }
+})
+
+jest.mock('../../service/authorizationService', () => {
+  return {
+    authorizationGuard: jest.fn().mockImplementation(() => {
+      throw UnauthorizedError({ message: 'UnauthorizedError' })
+    }),
   }
 })
 

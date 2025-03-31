@@ -25,7 +25,7 @@ declare module 'fastify' {
 
 fastify.decorateRequest('currentUser', undefined)
 
-fastify.addHook('preHandler', authHook)
+fastify.addHook('onRequest', authHook)
 
 fastify.register(healthCheckRoute, { prefix: fastifyConfig.register.prefix })
 fastify.register(infoRoute, { prefix: fastifyConfig.register.prefix })
