@@ -20,8 +20,12 @@ jest.mock('../../service/authorizationService', () => {
 })
 
 const uuid0 = '2700d2a7-90b1-4776-a0a2-bd4944b0e29e'
+const uuid1 = '3000d2a7-90b1-4776-a0a2-bd4944b0e21a'
+const uuid2 = '4000d2a7-90b1-4776-a0a2-bd4944b0e21a'
+const uuid3 = '5000d2a7-90b1-4776-a0a2-bd4944b0e21a'
 
 const itemName0 = 'some-item'
+const itemName1 = 'other-item'
 
 const items: ResourceTypeMock[] = [
   {
@@ -30,6 +34,30 @@ const items: ResourceTypeMock[] = [
     content: {
       desc: 'test content 0',
       items: [1, 2, 'three'],
+    },
+  },
+  {
+    id: uuid1,
+    name: itemName0,
+    content: {
+      desc: 'test content 1',
+      items: ['2001', 'Full Metal Jacket'],
+    },
+  },
+  {
+    id: uuid2,
+    name: itemName1,
+    content: {
+      desc: 'test content 2',
+      items: [],
+    },
+  },
+  {
+    id: uuid3,
+    name: itemName1,
+    content: {
+      desc: 'test content 3',
+      items: [],
     },
   },
 ]
@@ -102,7 +130,7 @@ afterEach(() => {
 
 describe('routes', () => {
   describe(`GET /${fastifyConfig.register.prefix}/item/${itemName0}`, () => {
-    it('get all items', async () => {
+    it(`get all ${itemName0} items`, async () => {
       const response = await service.inject({
         method: 'GET',
         url: `/${fastifyConfig.register.prefix}/item/${itemName0}`,
@@ -111,6 +139,20 @@ describe('routes', () => {
 
       const body = JSON.parse(response.body)
       const expectedItems = items.filter((i) => i.name === itemName0)
+      expect(body).toEqual(Object.values(expectedItems))
+    })
+  })
+
+  describe(`GET /${fastifyConfig.register.prefix}/item/${itemName1}`, () => {
+    it(`get all ${itemName1} items`, async () => {
+      const response = await service.inject({
+        method: 'GET',
+        url: `/${fastifyConfig.register.prefix}/item/${itemName1}`,
+      })
+      expect(response.statusCode).toBe(200)
+
+      const body = JSON.parse(response.body)
+      const expectedItems = items.filter((i) => i.name === itemName1)
       expect(body).toEqual(Object.values(expectedItems))
     })
   })
