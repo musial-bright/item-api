@@ -1,7 +1,7 @@
 import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
 
 import { schemaGet, schemaGetAll, schemaPatch, schemaPost } from './itemSchema'
-import { NotFoundError } from '../utils/errors'
+import { ForbiddenError, NotFoundError } from '../utils/errors'
 import { ResourceType } from '../entities/types'
 import Item from '../entities/Item'
 import { getCurrentUser } from '../decorator/currentUser'
@@ -19,17 +19,21 @@ const routes = async (fastify: FastifyInstance, _options: any) => {
     async (request: FastifyRequest, reply: FastifyReply) => {
       const { name } = request.params as Record<string, string>
 
-      // TODO: const currentUser = getCurrentUser({ request })
+      const currentUser = getCurrentUser({ request })
 
       const item = new Item(name)
-      const result = await item.queryBy({
-        indexNameSuffix: 'by-name',
-        attributeName: 'name',
-        attributeValue: name,
+      // TODO: optimize with a new index for user_id and name
+      const itemsForUser = await item.queryBy({
+        indexNameSuffix: 'by-user-id',
+        attributeName: 'user_id',
+        attributeValue: currentUser?.identifier || '',
         condition: '=',
       })
 
-      // TODO: introduce filter for now
+      let result: ResourceType[] = []
+      if (itemsForUser) {
+        result = itemsForUser.filter((item) => item.name === name)
+      }
 
       return reply.send(result)
     },
@@ -48,6 +52,10 @@ const routes = async (fastify: FastifyInstance, _options: any) => {
       const result = await item.get({ id })
       if (!result) {
         throw NotFoundError()
+      }
+
+      if (currentUser && result.user_id !== currentUser.identifier) {
+        throw ForbiddenError({ message: 'item forbidden' })
       }
 
       return reply.send(result)
@@ -88,6 +96,15 @@ const routes = async (fastify: FastifyInstance, _options: any) => {
       const { content } = request.body as BodyType
 
       const item = new Item(name)
+
+      const itemCheck = await item.get({ id })
+      if (!itemCheck) {
+        throw NotFoundError()
+      }
+      if (currentUser && itemCheck.user_id !== currentUser.identifier) {
+        throw ForbiddenError({ message: 'item forbidden' })
+      }
+
       const result = await item.update({
         id,
         attrs: {
@@ -113,7 +130,15 @@ const routes = async (fastify: FastifyInstance, _options: any) => {
       const { id, name } = request.params as Record<string, string>
 
       const item = new Item(name)
-      // TODO: provide user_id
+
+      const itemCheck = await item.get({ id })
+      if (!itemCheck) {
+        throw NotFoundError()
+      }
+      if (currentUser && itemCheck.user_id !== currentUser.identifier) {
+        throw ForbiddenError({ message: 'item forbidden' })
+      }
+
       const result = await item.delete({ id })
 
       if (!result) {

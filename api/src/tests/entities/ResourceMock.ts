@@ -74,11 +74,13 @@ class ResourceMock {
   }
 
   async create({ attrs }: { attrs: ResourceType }) {
-    const name = attrs.name as string
+    const { name, content, user_id } = attrs
+
     const item: ResourceTypeMock = {
       id: uuidv4(),
-      content: attrs.content,
       name,
+      content,
+      user_id,
     }
     this.table.items.push(item)
 
@@ -91,9 +93,12 @@ class ResourceMock {
       return
     }
 
+    const existingItem = this.table.items[index]
+
     const updatedItem = {
-      ...this.table.items[index],
+      ...existingItem,
       content: attrs.content,
+      id: existingItem.id,
     }
     this.table.items[index] = { ...updatedItem }
 

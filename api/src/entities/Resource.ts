@@ -35,7 +35,7 @@ class Resource {
     attributeName: string
     attributeValue: string
     condition: string
-  }) {
+  }): Promise<ResourceType[] | undefined> {
     const command = new QueryCommand({
       TableName: this.tableName,
       IndexName: `${this.tableName}-${indexNameSuffix}`,
@@ -52,7 +52,7 @@ class Resource {
     return response.Items
   }
 
-  async get({ id }: { id: string }) {
+  async get({ id }: { id: string }): Promise<ResourceType | undefined> {
     const command = new GetCommand({
       TableName: this.tableName,
       Key: { id },
@@ -62,7 +62,7 @@ class Resource {
     return response.Item
   }
 
-  async create({ attrs }: { attrs: ResourceType }) {
+  async create({ attrs }: { attrs: ResourceType }): Promise<ResourceType> {
     const { name, content, user_id } = attrs
 
     const item: ResourceType = {
@@ -82,7 +82,13 @@ class Resource {
     return item
   }
 
-  async update({ id, attrs }: { id: string; attrs: ResourceType }) {
+  async update({
+    id,
+    attrs,
+  }: {
+    id: string
+    attrs: ResourceType
+  }): Promise<ResourceType | undefined> {
     const existingItem = await this.get({ id })
     if (!existingItem) {
       return
@@ -106,7 +112,7 @@ class Resource {
     return updatedItem
   }
 
-  async delete({ id }: { id: string }) {
+  async delete({ id }: { id: string }): Promise<boolean> {
     const command = new DeleteCommand({
       TableName: this.tableName,
       Key: { id },

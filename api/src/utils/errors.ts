@@ -12,6 +12,10 @@ export const UnauthorizedError = ({ message }: { message: string }) => {
   return createError(401, 'Unauthorized', { message })
 }
 
+export const ForbiddenError = ({ message }: { message: string }) => {
+  return createError(403, 'Forbidden', { message })
+}
+
 export const InternalServerError = ({ message }: { message: string }) => {
   return createError(500, 'InternalServerError', { message })
 }

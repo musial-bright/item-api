@@ -19,6 +19,19 @@ jest.mock('../../service/authorizationService', () => {
   }
 })
 
+jest.mock('../../decorator/currentUser', () => {
+  const original = jest.requireActual<
+    typeof import('../../decorator/currentUser')
+  >('../../decorator/currentUser')
+  return {
+    ...original,
+    getCurrentUser: jest.fn().mockReturnValue({
+      identifier: 'api_key',
+      userinfo: undefined,
+    }),
+  }
+})
+
 const uuid0 = '2700d2a7-90b1-4776-a0a2-bd4944b0e29e'
 const uuid1 = '3000d2a7-90b1-4776-a0a2-bd4944b0e21a'
 const uuid2 = '4000d2a7-90b1-4776-a0a2-bd4944b0e21a'
@@ -26,6 +39,10 @@ const uuid3 = '5000d2a7-90b1-4776-a0a2-bd4944b0e21a'
 
 const itemName0 = 'some-item'
 const itemName1 = 'other-item'
+
+const userId0 = 'api_key'
+const userId1 = 'c000d2a7-90b1-4776-a0a2-bd4944b0e21c'
+const userId2 = 'c100d2a7-90b1-4776-a0a2-bd4944b0e22c'
 
 const items: ResourceTypeMock[] = [
   {
@@ -35,6 +52,7 @@ const items: ResourceTypeMock[] = [
       desc: 'test content 0',
       items: [1, 2, 'three'],
     },
+    user_id: userId0,
   },
   {
     id: uuid1,
@@ -43,6 +61,7 @@ const items: ResourceTypeMock[] = [
       desc: 'test content 1',
       items: ['2001', 'Full Metal Jacket'],
     },
+    user_id: userId1,
   },
   {
     id: uuid2,
@@ -51,6 +70,7 @@ const items: ResourceTypeMock[] = [
       desc: 'test content 2',
       items: [],
     },
+    user_id: userId2,
   },
   {
     id: uuid3,
@@ -138,13 +158,15 @@ describe('routes', () => {
       expect(response.statusCode).toBe(200)
 
       const body = JSON.parse(response.body)
-      const expectedItems = items.filter((i) => i.name === itemName0)
+      const expectedItems = items.filter((i) => {
+        return i.name === itemName0 && i.user_id === userId0
+      })
       expect(body).toEqual(Object.values(expectedItems))
     })
   })
 
   describe(`GET /${fastifyConfig.register.prefix}/item/${itemName1}`, () => {
-    it(`get all ${itemName1} items`, async () => {
+    it(`get no ${itemName1} because of permissions/user_id`, async () => {
       const response = await service.inject({
         method: 'GET',
         url: `/${fastifyConfig.register.prefix}/item/${itemName1}`,
@@ -152,8 +174,7 @@ describe('routes', () => {
       expect(response.statusCode).toBe(200)
 
       const body = JSON.parse(response.body)
-      const expectedItems = items.filter((i) => i.name === itemName1)
-      expect(body).toEqual(Object.values(expectedItems))
+      expect(body).toEqual([])
     })
   })
 
@@ -181,6 +202,23 @@ describe('routes', () => {
     })
   })
 
+  describe(`GET /${fastifyConfig.register.prefix}/item/${itemName0}/${uuid1}`, () => {
+    it('get fails with 403', async () => {
+      const response = await service.inject({
+        method: 'GET',
+        url: `/${fastifyConfig.register.prefix}/item/${itemName0}/${uuid1}`,
+      })
+      expect(response.statusCode).toBe(403)
+
+      const body = JSON.parse(response.body)
+      expect(body).toEqual({
+        code: 403,
+        error: 'item forbidden',
+        name: 'ForbiddenError',
+      })
+    })
+  })
+
   describe(`POST /${fastifyConfig.register.prefix}/item/${itemName0}`, () => {
     it('creates new item', async () => {
       const payload = {
@@ -196,6 +234,7 @@ describe('routes', () => {
       const expectedPostBody = {
         name: itemName0,
         content: payload.content,
+        user_id: userId0,
       }
       const { id, name, content } = JSON.parse(responsePost.body)
       expect(name).toEqual(expectedPostBody.name)
@@ -216,7 +255,7 @@ describe('routes', () => {
   })
 
   describe(`PATCH /${fastifyConfig.register.prefix}/item/${itemName0}/not-existing-id`, () => {
-    it('delete fails with 404', async () => {
+    it('update fails with 404', async () => {
       const payload = { content: { desc: 'updated-content', something: 9 } }
       const responsePatch = await service.inject({
         method: 'PATCH',
@@ -244,8 +283,29 @@ describe('routes', () => {
         id: body.id,
         name: itemName0,
         content: payload.content,
+        user_id: userId0,
       }
       expect(body).toEqual(expectedPostBody)
+    })
+  })
+
+  describe(`PATCH /${fastifyConfig.register.prefix}/item/${itemName0}/${uuid1}`, () => {
+    it('update fails with 403', async () => {
+      const payload = { content: { desc: 'updated-content' } }
+      const responsePatch = await service.inject({
+        method: 'PATCH',
+        url: `/${fastifyConfig.register.prefix}/item/${itemName0}/${uuid1}`,
+        payload: payload,
+      })
+
+      expect(responsePatch.statusCode).toBe(403)
+
+      const body = JSON.parse(responsePatch.body)
+      expect(body).toEqual({
+        code: 403,
+        error: 'item forbidden',
+        name: 'ForbiddenError',
+      })
     })
   })
 
@@ -276,6 +336,17 @@ describe('routes', () => {
         url: `/${fastifyConfig.register.prefix}/item/${itemName0}/${uuid0}`,
       })
       expect(responseGet.statusCode).toBe(404)
+    })
+  })
+
+  describe(`DELETE /${fastifyConfig.register.prefix}/item/${itemName0}/${uuid1}`, () => {
+    it('deletes fails with 403', async () => {
+      const responseDelete = await service.inject({
+        method: 'DELETE',
+        url: `/${fastifyConfig.register.prefix}/item/${itemName0}/${uuid1}`,
+      })
+
+      expect(responseDelete.statusCode).toBe(403)
     })
   })
 })
