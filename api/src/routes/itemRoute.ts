@@ -1,7 +1,11 @@
 import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
 
 import { schemaGet, schemaGetAll, schemaPatch, schemaPost } from './itemSchema'
-import { ForbiddenError, NotFoundError } from '../utils/errors'
+import {
+  ForbiddenError,
+  NotFoundError,
+  UnauthorizedError,
+} from '../utils/errors'
 import { ResourceType } from '../entities/types'
 import Item from '../entities/Item'
 import { getCurrentUser } from '../decorator/currentUser'
@@ -17,16 +21,19 @@ const routes = async (fastify: FastifyInstance, _options: any) => {
     indexPath,
     schemaGetAll,
     async (request: FastifyRequest, reply: FastifyReply) => {
-      const { name } = request.params as Record<string, string>
-
       const currentUser = getCurrentUser({ request })
+      if (!currentUser || !currentUser.identifier) {
+        throw UnauthorizedError({ message: 'unauthorized' })
+      }
+
+      const { name } = request.params as Record<string, string>
 
       const item = new Item(name)
       // TODO: optimize with a new index for user_id and name
       const itemsForUser = await item.queryBy({
         indexNameSuffix: 'by-user-id',
         attributeName: 'user_id',
-        attributeValue: currentUser?.identifier || '',
+        attributeValue: currentUser.identifier,
         condition: '=',
       })
 
@@ -44,6 +51,9 @@ const routes = async (fastify: FastifyInstance, _options: any) => {
     schemaGet,
     async (request: FastifyRequest, reply: FastifyReply) => {
       const currentUser = getCurrentUser({ request })
+      if (!currentUser || !currentUser.identifier) {
+        throw UnauthorizedError({ message: 'unauthorized' })
+      }
 
       const { id, name } = request.params as Record<string, string>
 
@@ -54,7 +64,7 @@ const routes = async (fastify: FastifyInstance, _options: any) => {
         throw NotFoundError()
       }
 
-      if (currentUser && result.user_id !== currentUser.identifier) {
+      if (result.user_id !== currentUser.identifier) {
         throw ForbiddenError({ message: 'item forbidden' })
       }
 
@@ -67,6 +77,9 @@ const routes = async (fastify: FastifyInstance, _options: any) => {
     schemaPost,
     async (request: FastifyRequest, reply: FastifyReply) => {
       const currentUser = getCurrentUser({ request })
+      if (!currentUser || !currentUser.identifier) {
+        throw UnauthorizedError({ message: 'unauthorized' })
+      }
 
       const { name } = request.params as Record<string, string>
       const { content } = request.body as BodyType
@@ -76,7 +89,7 @@ const routes = async (fastify: FastifyInstance, _options: any) => {
         attrs: {
           name: name,
           content: content,
-          user_id: currentUser?.identifier,
+          user_id: currentUser.identifier,
         },
       })
 
@@ -91,6 +104,9 @@ const routes = async (fastify: FastifyInstance, _options: any) => {
     schemaPatch,
     async (request: FastifyRequest, reply: FastifyReply) => {
       const currentUser = getCurrentUser({ request })
+      if (!currentUser || !currentUser.identifier) {
+        throw UnauthorizedError({ message: 'unauthorized' })
+      }
 
       const { name, id } = request.params as Record<string, string>
       const { content } = request.body as BodyType
@@ -101,7 +117,7 @@ const routes = async (fastify: FastifyInstance, _options: any) => {
       if (!itemCheck) {
         throw NotFoundError()
       }
-      if (currentUser && itemCheck.user_id !== currentUser.identifier) {
+      if (itemCheck.user_id !== currentUser.identifier) {
         throw ForbiddenError({ message: 'item forbidden' })
       }
 
@@ -126,6 +142,9 @@ const routes = async (fastify: FastifyInstance, _options: any) => {
     schemaGet,
     async (request: FastifyRequest, reply: FastifyReply) => {
       const currentUser = getCurrentUser({ request })
+      if (!currentUser || !currentUser.identifier) {
+        throw UnauthorizedError({ message: 'unauthorized' })
+      }
 
       const { id, name } = request.params as Record<string, string>
 
@@ -135,7 +154,7 @@ const routes = async (fastify: FastifyInstance, _options: any) => {
       if (!itemCheck) {
         throw NotFoundError()
       }
-      if (currentUser && itemCheck.user_id !== currentUser.identifier) {
+      if (itemCheck.user_id !== currentUser.identifier) {
         throw ForbiddenError({ message: 'item forbidden' })
       }
 
