@@ -1,17 +1,12 @@
 # TODO
 
-√ .env
 API
-√ basic item storage
-- created and updated at as unix epoch
-- item content as json
-- item with content merge
-- item definitions (in db)
-√ user via id
-√ authorizer
-√ health check endpoint
-√ api key for easier dev access
-√ basic resource permissions
+- created_at and updated_at as unix epoch
+- item with any properties
+- item properties as 
+  id, name, user_id, (type, _type, _id) protected
+  created_at, updated_at
+- name+uer_id index
 
 Config and quota
 - item name definition
@@ -19,7 +14,4 @@ Config and quota
 - count per item name
 
 AWS
-√ aws cloudformation for infrastructure
-√ deployment scripts
 - rotate filename/CF
-√ aws cloudfront for dynamo db
