@@ -3,6 +3,7 @@
 √ .env
 API
 √ basic item storage
+- created and updated at as unix epoch
 - item content as json
 - item with content merge
 - item definitions (in db)
