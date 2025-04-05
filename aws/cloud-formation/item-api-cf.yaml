@@ -8,12 +8,10 @@ Parameters:
     Type: String
     Description: Environment for the Stack
     Default: development
-    Environment:
-      Type: String
-      AllowedValues:
-        - development
-        - staging
-        - production
+    AllowedValues:
+      - development
+      - staging
+      - production
   FunctionName:
     Type: String
     Description: Name of the lambda function
@@ -130,9 +128,6 @@ Resources:
               KeyType: "HASH"
           Projection:
             ProjectionType: "ALL"
-          # ProvisionedThroughput:
-          #   ReadCapacityUnits: 1
-          #   WriteCapacityUnits: 1
         - 
           IndexName:
             Fn::Sub: "${FunctionName}-${Environment}-item-by-user-id"
@@ -141,13 +136,16 @@ Resources:
               KeyType: "HASH"
           Projection:
             ProjectionType: "ALL"
-          # ProvisionedThroughput:
-          #   ReadCapacityUnits: 1
-          #   WriteCapacityUnits: 1
-      # ProvisionedThroughput:
-      #   ReadCapacityUnits: 1
-      #   WriteCapacityUnits: 1
-      # BillingMode: "PAY_PER_REQUEST"
+        - 
+          IndexName:
+            Fn::Sub: "${FunctionName}-${Environment}-item-by-user-id-and-name"
+          KeySchema:
+            - AttributeName: "user_id"
+              KeyType: "HASH"
+            - AttributeName: "name"
+              KeyType: "RANGE"
+          Projection:
+            ProjectionType: "ALL"
       BillingMode: "PAY_PER_REQUEST"
 
 Outputs:

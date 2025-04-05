@@ -84,27 +84,27 @@ bin/delete-stack <stage>
 
 
 ## Open local app
-Open in browser (http://localhost:3000/api/info)[http://localhost:3000/api/info] or with CURL:
+Open in browser (http://localhost:3000/item-api/info)[http://localhost:3000/item-api/info] or with CURL:
 ```
-curl -X GET 'http://localhost:3000/api/info'
-curl -X <POST|GET|PUT|PATCH|DELETE> 'http://localhost:3000/api/item/:name/:id'
+curl -X GET 'http://localhost:3000/item-api/info'
+curl -X <POST|GET|PUT|PATCH|DELETE> 'http://localhost:3000/item-api/item/:name/:id'
 ```
 
 Example:
 ```
-curl -X POST http://localhost:3000/api/item/test-item \
+curl -X POST http://localhost:3000/item-api/item/test-item \
      -H 'Content-Type: application/json' \
      -H 'Accept: application/json' \
      -H 'Authorization: <auth token>' \
      -d '{ "content": { "desc": "hello item", "items": [1]} }'
 
-curl -X PATCH http://localhost:3000/api/item/test-item/<ID> \
+curl -X PATCH http://localhost:3000/item-api/item/test-item/<ID> \
      -H 'Content-Type: application/json' \
      -H 'Accept: application/json' \
      -H 'Authorization: <auth token>' \
      -d '{ "content": { "desc": "some object data", "items": [1, 2, 3, "four"]} }'
 
-curl -X GET http://localhost:3000/api/item/test-item \
+curl -X GET http://localhost:3000/item-api/item/test-item \
      -H 'Content-Type: application/json' \
      -H 'Accept: application/json' \
      -H 'Authorization: <auth token>'

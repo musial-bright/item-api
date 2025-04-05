@@ -60,6 +60,26 @@ export const createItemTable = async () => {
           WriteCapacityUnits: 1,
         },
       },
+      {
+        IndexName: `${tableNames.item}-by-user-id-and-name`,
+        KeySchema: [
+          {
+            AttributeName: 'user_id',
+            KeyType: 'HASH',
+          },
+          {
+            AttributeName: 'name',
+            KeyType: 'RANGE',
+          },
+        ],
+        Projection: {
+          ProjectionType: 'ALL',
+        },
+        ProvisionedThroughput: {
+          ReadCapacityUnits: 1,
+          WriteCapacityUnits: 1,
+        },
+      },
     ],
     ProvisionedThroughput: {
       ReadCapacityUnits: 1,
