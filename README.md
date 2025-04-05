@@ -27,7 +27,7 @@ You have three options here for the stage development|staging|production:
 2. use `sam deploy --guided`
 3. copy the `api/dist/index.cjs` to lambda. For that run `npm run build` first.
 
-## Develop
+## Development
 Run a Fastify server
 ```
 # run local server
@@ -39,6 +39,29 @@ npm run test
 # run linter
 npm run lint
 npm run lint -- --fix
+```
+
+### Local Dynamo DB
+
+Local installation for development is located in the folder `aws/dynamodb`.
+```
+cd aws/dynamodb
+
+# install dynamo on docker
+npm run db-start
+
+# reset db
+npm run db-reset
+
+```
+Maintain tables in `aws/dynamodb/src/createTable/*`.
+
+DynamoDB admin view
+```
+npm install -g dynamodb-admin
+dynamodb-admin --dynamo-endpoint=http://localhost:8000
+
+# open in browser: http://localhost:8001
 ```
 
 ## Infrastructure management
