@@ -28,6 +28,10 @@ const routes = async (fastify: FastifyInstance, _options: any) => {
 
       const { name } = request.params as Record<string, string>
 
+      if (name === '') {
+        throw NotFoundError()
+      }
+
       const item = new Item(name)
       const result = await item.queryBy({
         indexNameSuffix: 'by-user-id-and-name',
@@ -41,8 +45,8 @@ const routes = async (fastify: FastifyInstance, _options: any) => {
             attrName: 'name',
             attrValue: name,
             condition: '=',
-          }
-        ]
+          },
+        ],
       })
 
       return reply.send(result)
