@@ -6,6 +6,7 @@ import Resource from '../../entities/Resource'
 
 import ResourceMock, { ResourceTypeMock } from '../entities/ResourceMock'
 import { ResourceType } from '../../entities/types'
+import { IndexQueryCondition } from '../../utils/dynamoDbHelper'
 
 jest.mock('../../config/variableConfig', () => {
   return {
@@ -84,7 +85,7 @@ const items: ResourceTypeMock[] = [
 
 let resourceMock: ResourceMock = new ResourceMock({
   tableNameSuffix: itemName0,
-  indexNameSuffix: 'by-name',
+  indexNameSuffix: 'by-user-id-and-name',
   items,
 })
 
@@ -94,23 +95,37 @@ beforeAll(() => {
     .mockImplementation(
       async ({
         indexNameSuffix,
-        attributeName,
-        attributeValue,
-        condition,
+        conditions,
       }: {
         indexNameSuffix: string
-        attributeName: string
-        attributeValue: string
-        condition: string
+        conditions: IndexQueryCondition[]
       }) => {
         return resourceMock.queryBy({
           indexNameSuffix,
-          attributeName,
-          attributeValue,
-          condition,
+          conditions,
         })
       },
     )
+    // .mockImplementation(
+    //   async ({
+    //     indexNameSuffix,
+    //     attributeName,
+    //     attributeValue,
+    //     condition,
+    //   }: {
+    //     indexNameSuffix: string
+    //     attributeName: string
+    //     attributeValue: string
+    //     condition: string
+    //   }) => {
+    //     return resourceMock.queryBy({
+    //       indexNameSuffix,
+    //       attributeName,
+    //       attributeValue,
+    //       condition,
+    //     })
+    //   },
+    // )
 
   jest
     .spyOn(Resource.prototype, 'get')

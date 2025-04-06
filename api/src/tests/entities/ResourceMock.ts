@@ -2,6 +2,8 @@ import { v4 as uuidv4 } from 'uuid'
 
 import { ResourceType } from '../../entities/types'
 import { tableIndexName, tableName } from '../../utils/tableName'
+import { IndexQueryCondition } from '../../utils/dynamoDbHelper'
+import { allEqual } from '../../utils/languageTools'
 
 export type ResourceTypeMock = {
   id: string
@@ -44,26 +46,38 @@ class ResourceMock {
 
   async queryBy({
     indexNameSuffix,
-    attributeName,
-    attributeValue,
-    condition,
+    conditions,
   }: {
     indexNameSuffix: string
-    attributeName: string
-    attributeValue: string
-    condition: string
+    conditions: IndexQueryCondition[],
   }) {
-    if (!['='].includes(condition)) {
+    if (conditions.length < 1 || conditions.length > 2) {
       return []
     }
 
-    if (indexNameSuffix === 'by-name' && attributeName === 'name') {
-      return this.table.items.filter((item) => item.name === attributeValue)
-    } else if (
-      indexNameSuffix === 'by-user-id' &&
-      attributeName === 'user_id'
-    ) {
-      return this.table.items.filter((item) => item.user_id === attributeValue)
+    if (indexNameSuffix === 'by-name') {
+      return this.table.items.filter((item) => {
+        return item.name === conditions[0].attrValue
+      })
+    } else if (indexNameSuffix === 'by-user-id') {
+      return this.table.items.filter((item) => {
+        return item.user_id === conditions[0].attrValue
+      })
+    } else if (indexNameSuffix === 'by-user-id-and-name') {
+      return this.table.items.filter((item) => {
+        let searchResults: boolean[] = []
+        conditions.forEach((condition) => {
+          if (condition.attrName === 'user_id') {
+            searchResults.push(item[condition.attrName] === condition.attrValue)
+          }
+
+          if (condition.attrName === 'name') {
+            searchResults.push(item[condition.attrName] === condition.attrValue)
+          }
+        })
+
+        return allEqual(searchResults)
+      })
     }
 
     return []
