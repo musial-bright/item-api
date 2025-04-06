@@ -1,6 +1,9 @@
 import { expect, describe, it } from '@jest/globals'
-import { createQuery, CreateQueryInterface, IndexQueryCondition } from '../../utils/dynamoDbHelper'
-
+import {
+  createQuery,
+  CreateQueryInterface,
+  IndexQueryCondition,
+} from '../../utils/dynamoDbHelper'
 
 const queryBase: CreateQueryInterface = {
   tableName: 'item',
@@ -29,7 +32,6 @@ const conditions: IndexQueryCondition[] = [
     condition: '=',
   },
 ]
-    
 
 describe('createQuery()', () => {
   it('has empty conditions', () => {
@@ -45,7 +47,7 @@ describe('createQuery()', () => {
 
     expect(createQuery(query)).toEqual(expectedQuery)
   })
-  
+
   it('has one condition', () => {
     const query: CreateQueryInterface = {
       ...queryBase,
@@ -70,13 +72,14 @@ describe('createQuery()', () => {
   it('has two conditions', () => {
     const query: CreateQueryInterface = {
       ...queryBase,
-      conditions: conditions.slice(0, 2)
+      conditions: conditions.slice(0, 2),
     }
 
     const expectedQuery = {
       TableName: 'item',
       IndexName: 'item-by-user-id-and-name',
-      KeyConditionExpression: '#attrName0 = :attrValue0 and #attrName1 = :attrValue1',
+      KeyConditionExpression:
+        '#attrName0 = :attrValue0 and #attrName1 = :attrValue1',
       ExpressionAttributeNames: {
         '#attrName0': attrName0,
         '#attrName1': attrName1,
@@ -95,13 +98,14 @@ describe('createQuery()', () => {
     const attrValue0 = 'some-user-id'
     const query: CreateQueryInterface = {
       ...queryBase,
-      conditions: conditions
+      conditions: conditions,
     }
 
     const expectedQuery = {
       TableName: 'item',
       IndexName: 'item-by-user-id-and-name',
-      KeyConditionExpression: '#attrName0 = :attrValue0 and #attrName1 = :attrValue1',
+      KeyConditionExpression:
+        '#attrName0 = :attrValue0 and #attrName1 = :attrValue1',
       ExpressionAttributeNames: {
         '#attrName0': attrName0,
         '#attrName1': attrName1,

@@ -15,4 +15,3 @@ describe('allEqual', () => {
     expect(allEqual<boolean>([true, true, true])).toBeTruthy()
   })
 })
-

@@ -31,7 +31,7 @@ class Resource {
     conditions,
   }: {
     indexNameSuffix: string
-    conditions: IndexQueryCondition[],
+    conditions: IndexQueryCondition[]
   }): Promise<ResourceType[] | undefined> {
     const queryCommand = createQuery({
       tableName: this.tableName,

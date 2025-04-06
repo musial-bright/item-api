@@ -49,7 +49,7 @@ class ResourceMock {
     conditions,
   }: {
     indexNameSuffix: string
-    conditions: IndexQueryCondition[],
+    conditions: IndexQueryCondition[]
   }) {
     if (conditions.length < 1 || conditions.length > 2) {
       return []
@@ -65,7 +65,7 @@ class ResourceMock {
       })
     } else if (indexNameSuffix === 'by-user-id-and-name') {
       return this.table.items.filter((item) => {
-        let searchResults: boolean[] = []
+        const searchResults: boolean[] = []
         conditions.forEach((condition) => {
           if (condition.attrName === 'user_id') {
             searchResults.push(item[condition.attrName] === condition.attrValue)

@@ -7,9 +7,9 @@ const Defaults = {
 }
 
 export type IndexQueryCondition = {
-  attrName: string,
-  attrValue: string,
-  condition: Condition,
+  attrName: string
+  attrValue: string
+  condition: Condition
 }
 
 export interface CreateQueryInterface {
@@ -28,25 +28,31 @@ export const createQuery = ({
 
   const selectedConditions = conditions.slice(0, Defaults.conditions.max)
   if (conditions.length > 2) {
-    console.warn(`createQuery max ${Defaults.conditions.max} conditions allowed:`, conditions)
+    console.warn(
+      `createQuery max ${Defaults.conditions.max} conditions allowed:`,
+      conditions,
+    )
     console.warn('createQuery selected conditions are:', selectedConditions)
   }
-  
+
   selectedConditions.forEach((indexQueryCondition, index) => {
     expressionAttributeNames[`#attrName${index}`] = indexQueryCondition.attrName
-    expressionAttributeValues[`:attrValue${index}`] = indexQueryCondition.attrValue
+    expressionAttributeValues[`:attrValue${index}`] =
+      indexQueryCondition.attrValue
   })
 
   const queryCommand = {
     TableName: tableName,
     IndexName: `${tableName}-${indexNameSuffix}`,
-    KeyConditionExpression: selectedConditions.map((condition, index) => {
-      return [
-        `#attrName${index}`,
-        condition.condition,
-        `:attrValue${index}`
-      ].join(' ')
-    }).join(' and '),
+    KeyConditionExpression: selectedConditions
+      .map((condition, index) => {
+        return [
+          `#attrName${index}`,
+          condition.condition,
+          `:attrValue${index}`,
+        ].join(' ')
+      })
+      .join(' and '),
     ExpressionAttributeNames: expressionAttributeNames,
     ExpressionAttributeValues: expressionAttributeValues,
   }

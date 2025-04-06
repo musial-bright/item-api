@@ -106,26 +106,26 @@ beforeAll(() => {
         })
       },
     )
-    // .mockImplementation(
-    //   async ({
-    //     indexNameSuffix,
-    //     attributeName,
-    //     attributeValue,
-    //     condition,
-    //   }: {
-    //     indexNameSuffix: string
-    //     attributeName: string
-    //     attributeValue: string
-    //     condition: string
-    //   }) => {
-    //     return resourceMock.queryBy({
-    //       indexNameSuffix,
-    //       attributeName,
-    //       attributeValue,
-    //       condition,
-    //     })
-    //   },
-    // )
+  // .mockImplementation(
+  //   async ({
+  //     indexNameSuffix,
+  //     attributeName,
+  //     attributeValue,
+  //     condition,
+  //   }: {
+  //     indexNameSuffix: string
+  //     attributeName: string
+  //     attributeValue: string
+  //     condition: string
+  //   }) => {
+  //     return resourceMock.queryBy({
+  //       indexNameSuffix,
+  //       attributeName,
+  //       attributeValue,
+  //       condition,
+  //     })
+  //   },
+  // )
 
   jest
     .spyOn(Resource.prototype, 'get')
