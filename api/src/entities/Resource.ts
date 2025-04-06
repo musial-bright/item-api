@@ -11,6 +11,7 @@ import { v4 as uuidv4 } from 'uuid'
 import { ResourceType } from './types'
 import { tableName } from '../utils/tableName'
 import { envDynamoDbEndpoint } from '../config/envVariables'
+import { createQuery, IndexQueryCondition } from '../utils/dynamoDbHelper'
 
 class Resource {
   client: DynamoDBClient
@@ -27,26 +28,18 @@ class Resource {
 
   async queryBy({
     indexNameSuffix,
-    attributeName,
-    attributeValue,
-    condition,
+    conditions,
   }: {
     indexNameSuffix: string
-    attributeName: string
-    attributeValue: string
-    condition: string
+    conditions: IndexQueryCondition[],
   }): Promise<ResourceType[] | undefined> {
-    const command = new QueryCommand({
-      TableName: this.tableName,
-      IndexName: `${this.tableName}-${indexNameSuffix}`,
-      KeyConditionExpression: `#attrName ${condition} :attrValue`,
-      ExpressionAttributeNames: {
-        '#attrName': attributeName,
-      },
-      ExpressionAttributeValues: {
-        ':attrValue': attributeValue,
-      },
+    const queryCommand = createQuery({
+      tableName: this.tableName,
+      indexNameSuffix,
+      conditions,
     })
+
+    const command = new QueryCommand(queryCommand)
     const response = await this.docClient.send(command)
 
     return response.Items

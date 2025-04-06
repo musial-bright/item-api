@@ -29,18 +29,21 @@ const routes = async (fastify: FastifyInstance, _options: any) => {
       const { name } = request.params as Record<string, string>
 
       const item = new Item(name)
-      // TODO: optimize with a new index for user_id and name
-      const itemsForUser = await item.queryBy({
-        indexNameSuffix: 'by-user-id',
-        attributeName: 'user_id',
-        attributeValue: currentUser.identifier,
-        condition: '=',
+      const result = await item.queryBy({
+        indexNameSuffix: 'by-user-id-and-name',
+        conditions: [
+          {
+            attrName: 'user_id',
+            attrValue: currentUser.identifier,
+            condition: '=',
+          },
+          {
+            attrName: 'name',
+            attrValue: name,
+            condition: '=',
+          }
+        ]
       })
-
-      let result: ResourceType[] = []
-      if (itemsForUser) {
-        result = itemsForUser.filter((item) => item.name === name)
-      }
 
       return reply.send(result)
     },
