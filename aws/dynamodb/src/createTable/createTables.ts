@@ -7,6 +7,10 @@ import { createUserTable } from './createUserTable'
 export const dynamoClient = () => {
   return new DynamoDBClient({
     endpoint: endpoint,
+    credentials: {
+      accessKeyId: 'fake',
+      secretAccessKey: 'fake'
+    }
   })
 }
 

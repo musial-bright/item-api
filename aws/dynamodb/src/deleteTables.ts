@@ -3,6 +3,10 @@ import { endpoint, tableNames } from './config'
 
 const client = new DynamoDBClient({
   endpoint: endpoint,
+  credentials: {
+    accessKeyId: 'fake',
+    secretAccessKey: 'fake'
+  }
 })
 
 export const deleteItemTable = async (name: string) => {
