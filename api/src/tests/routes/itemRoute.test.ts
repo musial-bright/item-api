@@ -4,7 +4,7 @@ import fastifyConfig from '../../config/fastifyConfig'
 import service from '../../service'
 import Resource from '../../entities/Resource'
 
-import ResourceMock, { ResourceTypeMock } from '../entities/ResourceMock'
+import ResourceMock, { ResourceTypeMock } from '../__helpers__/ResourceMock'
 import { ResourceType } from '../../entities/types'
 import { IndexQueryCondition } from '../../utils/dynamoDbHelper'
 
@@ -106,26 +106,6 @@ beforeAll(() => {
         })
       },
     )
-  // .mockImplementation(
-  //   async ({
-  //     indexNameSuffix,
-  //     attributeName,
-  //     attributeValue,
-  //     condition,
-  //   }: {
-  //     indexNameSuffix: string
-  //     attributeName: string
-  //     attributeValue: string
-  //     condition: string
-  //   }) => {
-  //     return resourceMock.queryBy({
-  //       indexNameSuffix,
-  //       attributeName,
-  //       attributeValue,
-  //       condition,
-  //     })
-  //   },
-  // )
 
   jest
     .spyOn(Resource.prototype, 'get')
@@ -157,7 +137,7 @@ beforeAll(() => {
 afterEach(() => {
   resourceMock = new ResourceMock({
     tableNameSuffix: itemName0,
-    indexNameSuffix: 'by-name',
+    indexNameSuffix: 'by-user-id-and-name',
     items,
   })
   jest.clearAllMocks()

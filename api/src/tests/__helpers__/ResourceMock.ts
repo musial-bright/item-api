@@ -3,7 +3,6 @@ import { v4 as uuidv4 } from 'uuid'
 import { ResourceType } from '../../entities/types'
 import { tableIndexName, tableName } from '../../utils/tableName'
 import { IndexQueryCondition } from '../../utils/dynamoDbHelper'
-import { allEqual } from '../../utils/languageTools'
 
 export type ResourceTypeMock = {
   id: string
@@ -76,7 +75,7 @@ class ResourceMock {
           }
         })
 
-        return allEqual(searchResults)
+        return searchResults.every((element) => element === true)
       })
     }
 
