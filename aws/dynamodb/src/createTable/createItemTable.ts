@@ -39,10 +39,6 @@ export const createItemTable = async () => {
         Projection: {
           ProjectionType: 'ALL',
         },
-        ProvisionedThroughput: {
-          ReadCapacityUnits: 1,
-          WriteCapacityUnits: 1,
-        },
       },
       {
         IndexName: `${tableNames.item}-by-user-id`,
@@ -54,10 +50,6 @@ export const createItemTable = async () => {
         ],
         Projection: {
           ProjectionType: 'ALL',
-        },
-        ProvisionedThroughput: {
-          ReadCapacityUnits: 1,
-          WriteCapacityUnits: 1,
         },
       },
       {
@@ -75,17 +67,9 @@ export const createItemTable = async () => {
         Projection: {
           ProjectionType: 'ALL',
         },
-        ProvisionedThroughput: {
-          ReadCapacityUnits: 1,
-          WriteCapacityUnits: 1,
-        },
       },
     ],
-    ProvisionedThroughput: {
-      ReadCapacityUnits: 1,
-      WriteCapacityUnits: 1,
-    },
-    BillingMode: 'PROVISIONED', // or 'PAY_PER_REQUEST'
+    BillingMode: 'PAY_PER_REQUEST'
   })
 
   const response = await dynamoClient().send(command)
