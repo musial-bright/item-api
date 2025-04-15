@@ -58,6 +58,7 @@ Maintain tables in `aws/dynamodb/src/createTable/*`.
 
 DynamoDB admin view
 ```
+cd aws/dynamodb
 npm run dynamodb-admin
 
 # open in browser: http://localhost:8001
