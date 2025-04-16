@@ -1,25 +1,16 @@
-import { v4 as uuidv4 } from 'uuid'
-
-import { ResourceType } from '../../entities/types'
+import { ResourceAttributesType, ResourceType } from '../../entities/types'
 import { tableIndexName, tableName } from '../../utils/tableName'
 import { IndexQueryCondition } from '../../utils/dynamoDbHelper'
-
-export type ResourceTypeMock = {
-  id: string
-  name: string
-  content?: ResourceType
-  user_id?: string
-}
 
 export type TablesType = {
   tableNameSuffix: string
   indexNameSuffix: string
   tableName: string
   indexName: string
-  items: ResourceTypeMock[]
+  items: ResourceType[]
 }
 
-class ResourceMock {
+class GenericResourceMock {
   table: TablesType
 
   constructor({
@@ -29,7 +20,7 @@ class ResourceMock {
   }: {
     tableNameSuffix: string
     indexNameSuffix: string
-    items: ResourceTypeMock[]
+    items: ResourceType[]
   }) {
     this.table = {
       tableName: tableName({ tableNameSuffix: tableNameSuffix }),
@@ -82,26 +73,48 @@ class ResourceMock {
     return []
   }
 
-  async get({ id }: { id: string }): Promise<ResourceTypeMock | undefined> {
-    return this.table.items.find((item) => item.id === id)
+  async get({
+    keys,
+  }: {
+    keys: ResourceAttributesType
+  }): Promise<ResourceAttributesType | undefined> {
+    return this.table.items.find((item) => {
+      const searchResults: boolean[] = []
+      Object.keys(keys).forEach((key) => {
+        searchResults.push(item[key] === keys[key])
+      })
+
+      return searchResults.every((element) => element === true)
+    })
   }
 
-  async create({ attrs }: { attrs: ResourceType }) {
-    const { name, content, user_id } = attrs
+  async create({
+    attrs,
+  }: {
+    attrs: ResourceAttributesType
+  }): Promise<ResourceAttributesType> {
+    const item: ResourceType = { ...attrs }
 
-    const item: ResourceTypeMock = {
-      id: uuidv4(),
-      name,
-      content,
-      user_id,
-    }
     this.table.items.push(item)
 
     return item
   }
 
-  async update({ id, attrs }: { id: string; attrs: ResourceType }) {
-    const index = this.table.items.findIndex((item) => item.id === id)
+  async update({
+    keys,
+    attrs,
+  }: {
+    keys: ResourceAttributesType
+    attrs: ResourceAttributesType
+  }): Promise<ResourceAttributesType | undefined> {
+    const index = this.table.items.findIndex((item) => {
+      const searchResults: boolean[] = []
+      Object.keys(keys).forEach((key) => {
+        searchResults.push(item[key] === keys[key])
+      })
+
+      return searchResults.every((element) => element === true)
+    })
     if (index === -1) {
       return
     }
@@ -110,16 +123,22 @@ class ResourceMock {
 
     const updatedItem = {
       ...existingItem,
-      content: attrs.content,
-      id: existingItem.id,
+      ...attrs,
     }
     this.table.items[index] = { ...updatedItem }
 
     return updatedItem
   }
 
-  async delete({ id }: { id: string }) {
-    const index = this.table.items.findIndex((i) => i.id === id)
+  async delete({ keys }: { keys: ResourceAttributesType }): Promise<boolean> {
+    const index = this.table.items.findIndex((item) => {
+      const searchResults: boolean[] = []
+      Object.keys(keys).forEach((key) => {
+        searchResults.push(item[key] === keys[key])
+      })
+
+      return searchResults.every((element) => element === true)
+    })
     if (index === -1) {
       return false
     }
@@ -130,4 +149,4 @@ class ResourceMock {
   }
 }
 
-export default ResourceMock
+export default GenericResourceMock

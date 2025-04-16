@@ -30,9 +30,9 @@ describe('routes', () => {
 
       const body = JSON.parse(response.body)
       expect(body).toEqual({
-        code: 401,
+        code: '401',
         error: 'Unauthorized',
-        name: 'UnauthorizedError',
+        details: 'UnauthorizedError',
       })
     })
   })
@@ -48,9 +48,9 @@ describe('routes', () => {
 
       const body = JSON.parse(response.body)
       expect(body).toEqual({
-        code: 401,
+        code: '401',
         error: 'Unauthorized',
-        name: 'UnauthorizedError',
+        details: 'UnauthorizedError',
       })
     })
   })
@@ -66,9 +66,9 @@ describe('routes', () => {
 
       const body = JSON.parse(response.body)
       expect(body).toEqual({
-        code: 401,
+        code: '401',
         error: 'Unauthorized',
-        name: 'UnauthorizedError',
+        details: 'UnauthorizedError',
       })
     })
   })
@@ -88,9 +88,9 @@ describe('routes', () => {
 
       const body = JSON.parse(responsePost.body)
       expect(body).toEqual({
-        code: 401,
+        code: '401',
         error: 'Unauthorized',
-        name: 'UnauthorizedError',
+        details: 'UnauthorizedError',
       })
     })
   })
@@ -108,9 +108,9 @@ describe('routes', () => {
 
       const body = JSON.parse(responsePatch.body)
       expect(body).toEqual({
-        code: 401,
+        code: '401',
         error: 'Unauthorized',
-        name: 'UnauthorizedError',
+        details: 'UnauthorizedError',
       })
     })
   })
@@ -126,9 +126,9 @@ describe('routes', () => {
 
       const body = JSON.parse(responseDelete.body)
       expect(body).toEqual({
-        code: 401,
+        code: '401',
         error: 'Unauthorized',
-        name: 'UnauthorizedError',
+        details: 'UnauthorizedError',
       })
     })
   })

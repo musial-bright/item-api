@@ -6,14 +6,13 @@ import {
   PutCommand,
   QueryCommand,
 } from '@aws-sdk/lib-dynamodb'
-import { v4 as uuidv4 } from 'uuid'
 
-import { ResourceType } from './types'
+import { ResourceAttributesType, ResourceType } from './types'
 import { tableName } from '../utils/tableName'
-import { envDynamoDbEndpoint } from '../config/envVariables'
+import { envDynamoDbEndpoint, envDynamoDbRegion } from '../config/envVariables'
 import { createQuery, IndexQueryCondition } from '../utils/dynamoDbHelper'
 
-class Resource {
+class GenericResource {
   client: DynamoDBClient
   docClient: DynamoDBDocumentClient
   tableName: string
@@ -21,6 +20,12 @@ class Resource {
   constructor(tableNameSuffix: string) {
     this.client = new DynamoDBClient({
       endpoint: envDynamoDbEndpoint(),
+      region: envDynamoDbRegion(),
+      // TODO: remove in AWS - just for local testing
+      credentials: {
+        accessKeyId: 'fake',
+        secretAccessKey: 'fake',
+      },
     })
     this.docClient = DynamoDBDocumentClient.from(this.client)
     this.tableName = tableName({ tableNameSuffix: tableNameSuffix })
@@ -45,25 +50,26 @@ class Resource {
     return response.Items
   }
 
-  async get({ id }: { id: string }): Promise<ResourceType | undefined> {
+  async get({
+    keys,
+  }: {
+    keys: ResourceAttributesType
+  }): Promise<ResourceAttributesType | undefined> {
     const command = new GetCommand({
       TableName: this.tableName,
-      Key: { id },
+      Key: keys,
     })
     const response = await this.docClient.send(command)
 
     return response.Item
   }
 
-  async create({ attrs }: { attrs: ResourceType }): Promise<ResourceType> {
-    const { name, content, user_id } = attrs
-
-    const item: ResourceType = {
-      id: uuidv4(),
-      name,
-      content,
-      user_id,
-    }
+  async create({
+    attrs,
+  }: {
+    attrs: ResourceAttributesType
+  }): Promise<ResourceAttributesType> {
+    const item: ResourceType = { ...attrs }
 
     const command = new PutCommand({
       TableName: this.tableName,
@@ -76,23 +82,20 @@ class Resource {
   }
 
   async update({
-    id,
+    keys,
     attrs,
   }: {
-    id: string
-    attrs: ResourceType
-  }): Promise<ResourceType | undefined> {
-    const existingItem = await this.get({ id })
+    keys: ResourceAttributesType
+    attrs: ResourceAttributesType
+  }): Promise<ResourceAttributesType | undefined> {
+    const existingItem = await this.get({ keys })
     if (!existingItem) {
       return
     }
 
-    const { content } = attrs
-
-    const updatedItem: ResourceType = {
+    const updatedItem: ResourceAttributesType = {
       ...existingItem,
-      content,
-      id: existingItem.id as string, // make sure ID stays the same
+      ...attrs,
     }
 
     const command = new PutCommand({
@@ -105,10 +108,10 @@ class Resource {
     return updatedItem
   }
 
-  async delete({ id }: { id: string }): Promise<boolean> {
+  async delete({ keys }: { keys: ResourceAttributesType }): Promise<boolean> {
     const command = new DeleteCommand({
       TableName: this.tableName,
-      Key: { id },
+      Key: keys,
       ReturnValues: 'ALL_OLD',
     })
 
@@ -118,4 +121,4 @@ class Resource {
   }
 }
 
-export default Resource
+export default GenericResource

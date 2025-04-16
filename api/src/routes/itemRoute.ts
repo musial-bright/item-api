@@ -29,7 +29,7 @@ const routes = async (fastify: FastifyInstance, _options: any) => {
       const { name } = request.params as Record<string, string>
 
       if (name === '') {
-        throw NotFoundError()
+        throw NotFoundError({ message: 'name is empty' })
       }
 
       const item = new Item(name)
@@ -66,9 +66,9 @@ const routes = async (fastify: FastifyInstance, _options: any) => {
 
       const item = new Item(name)
 
-      const result = await item.get({ id })
+      const result = await item.get({ keys: { id } })
       if (!result) {
-        throw NotFoundError()
+        throw NotFoundError({ message: 'not found' })
       }
 
       if (result.user_id !== currentUser.identifier) {
@@ -120,24 +120,24 @@ const routes = async (fastify: FastifyInstance, _options: any) => {
 
       const item = new Item(name)
 
-      const itemCheck = await item.get({ id })
+      const itemCheck = await item.get({ keys: { id } })
       if (!itemCheck) {
-        throw NotFoundError()
+        throw NotFoundError({ message: 'not found' })
       }
       if (itemCheck.user_id !== currentUser.identifier) {
         throw ForbiddenError({ message: 'item forbidden' })
       }
 
       const result = await item.update({
-        id,
+        keys: { id },
         attrs: {
-          name: name,
           content: content,
+          name: name,
         },
       })
 
       if (!result) {
-        throw NotFoundError()
+        throw NotFoundError({ message: 'not found' })
       }
 
       return reply.send(result)
@@ -157,18 +157,18 @@ const routes = async (fastify: FastifyInstance, _options: any) => {
 
       const item = new Item(name)
 
-      const itemCheck = await item.get({ id })
+      const itemCheck = await item.get({ keys: { id } })
       if (!itemCheck) {
-        throw NotFoundError()
+        throw NotFoundError({ message: 'not found' })
       }
       if (itemCheck.user_id !== currentUser.identifier) {
         throw ForbiddenError({ message: 'item forbidden' })
       }
 
-      const result = await item.delete({ id })
+      const result = await item.delete({ keys: { id } })
 
       if (!result) {
-        throw NotFoundError()
+        throw NotFoundError({ message: 'not found' })
       }
 
       reply.statusCode = 204

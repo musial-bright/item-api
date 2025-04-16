@@ -1,7 +1,9 @@
-import { ItemType } from './types'
-import Resource from './Resource'
+import { v4 as uuidv4 } from 'uuid'
 
-class Item extends Resource {
+import { ItemType, ResourceAttributesType } from './types'
+import GenericResource from './GenericResource'
+
+class Item extends GenericResource {
   name: string
 
   constructor(name: string) {
@@ -14,21 +16,33 @@ class Item extends Resource {
     return super.create({
       attrs: {
         ...attrs,
+        id: uuidv4(),
       },
     })
   }
 
-  async update({ id, attrs }: { id: string; attrs: ItemType }) {
+  async update({
+    keys,
+    attrs,
+  }: {
+    keys: ResourceAttributesType
+    attrs: ItemType
+  }) {
+    const id = keys.id as string
+
     return super.update({
-      id,
+      keys: { id },
       attrs: {
         ...attrs,
+        id: id,
       },
     })
   }
 
-  async delete({ id }: { id: string }): Promise<boolean> {
-    return super.delete({ id })
+  async delete({ keys }: { keys: ResourceAttributesType }): Promise<boolean> {
+    const id = keys.id as string
+
+    return super.delete({ keys: { id } })
   }
 }
 

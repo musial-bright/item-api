@@ -1,3 +1,7 @@
+import { NativeAttributeValue } from '@aws-sdk/lib-dynamodb'
+
+export type ResourceAttributesType = Record<string, NativeAttributeValue>
+
 // eslint-disable-next-line  @typescript-eslint/no-explicit-any
 export type ResourceType = Record<string, any>
 

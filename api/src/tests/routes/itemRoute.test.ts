@@ -2,11 +2,12 @@ import { expect, describe, it, jest, afterEach, beforeAll } from '@jest/globals'
 
 import fastifyConfig from '../../config/fastifyConfig'
 import service from '../../service'
-import Resource from '../../entities/Resource'
 
-import ResourceMock, { ResourceTypeMock } from '../__helpers__/ResourceMock'
-import { ResourceType } from '../../entities/types'
+import { ResourceAttributesType, ResourceType } from '../../entities/types'
 import { IndexQueryCondition } from '../../utils/dynamoDbHelper'
+import GenericResourceMock from '../__helpers__/GenericResourceMock'
+import { currentUserFixture } from '../__fixtures__/currentUserFixture'
+import GenericResource from '../../entities/GenericResource'
 
 jest.mock('../../config/variableConfig', () => {
   return {
@@ -15,20 +16,35 @@ jest.mock('../../config/variableConfig', () => {
 })
 
 jest.mock('../../service/authorizationService', () => {
+  const original = jest.requireActual<
+    typeof import('../../service/authorizationService')
+  >('../../service/authorizationService')
+
   return {
-    authorizationGuard: jest.fn().mockReturnValue({}),
+    ...original,
+    authorizationGuard: jest.fn().mockReturnValue(undefined),
   }
 })
 
+const userId0 = 'a100d2a7-90b1-4776-a0a2-bd4944b0e21a'
+const userId1 = 'c000d2a7-90b1-4776-a0a2-bd4944b0e21c'
+const userId2 = 'c100d2a7-90b1-4776-a0a2-bd4944b0e22c'
+
+// provide current user with groups
 jest.mock('../../decorator/currentUser', () => {
   const original = jest.requireActual<
     typeof import('../../decorator/currentUser')
   >('../../decorator/currentUser')
   return {
     ...original,
-    getCurrentUser: jest.fn().mockReturnValue({
-      identifier: 'api_key',
-      userinfo: undefined,
+    getCurrentUser: jest.fn().mockImplementation(() => {
+      const user = currentUserFixture('no-teams')
+      user.identifier = userId0
+      if (user.userinfo) {
+        user.userinfo.sub = userId0
+      }
+
+      return user
     }),
   }
 })
@@ -41,11 +57,7 @@ const uuid3 = '5000d2a7-90b1-4776-a0a2-bd4944b0e21a'
 const itemName0 = 'some-item'
 const itemName1 = 'other-item'
 
-const userId0 = 'api_key'
-const userId1 = 'c000d2a7-90b1-4776-a0a2-bd4944b0e21c'
-const userId2 = 'c100d2a7-90b1-4776-a0a2-bd4944b0e22c'
-
-const items: ResourceTypeMock[] = [
+const items: ResourceType[] = [
   {
     id: uuid0,
     name: itemName0,
@@ -83,7 +95,7 @@ const items: ResourceTypeMock[] = [
   },
 ]
 
-let resourceMock: ResourceMock = new ResourceMock({
+let resourceMock: GenericResourceMock = new GenericResourceMock({
   tableNameSuffix: itemName0,
   indexNameSuffix: 'by-user-id-and-name',
   items,
@@ -91,7 +103,7 @@ let resourceMock: ResourceMock = new ResourceMock({
 
 beforeAll(() => {
   jest
-    .spyOn(Resource.prototype, 'queryBy')
+    .spyOn(GenericResource.prototype, 'queryBy')
     .mockImplementation(
       async ({
         indexNameSuffix,
@@ -108,34 +120,42 @@ beforeAll(() => {
     )
 
   jest
-    .spyOn(Resource.prototype, 'get')
-    .mockImplementation(async ({ id }: { id: string }) => {
-      return await resourceMock.get({ id })
+    .spyOn(GenericResource.prototype, 'get')
+    .mockImplementation(async ({ keys }: { keys: ResourceAttributesType }) => {
+      return await resourceMock.get({ keys })
     })
 
   jest
-    .spyOn(Resource.prototype, 'create')
-    .mockImplementation(async ({ attrs }: { attrs: ResourceType }) => {
-      return await resourceMock.create({ attrs })
-    })
-
-  jest
-    .spyOn(Resource.prototype, 'update')
+    .spyOn(GenericResource.prototype, 'create')
     .mockImplementation(
-      async ({ id, attrs }: { id: string; attrs: ResourceType }) => {
-        return await resourceMock.update({ id, attrs })
+      async ({ attrs }: { attrs: ResourceAttributesType }) => {
+        return await resourceMock.create({ attrs })
       },
     )
 
   jest
-    .spyOn(Resource.prototype, 'delete')
-    .mockImplementation(async ({ id }: { id: string }) => {
-      return await resourceMock.delete({ id })
+    .spyOn(GenericResource.prototype, 'update')
+    .mockImplementation(
+      async ({
+        keys,
+        attrs,
+      }: {
+        keys: ResourceAttributesType
+        attrs: ResourceAttributesType
+      }) => {
+        return await resourceMock.update({ keys, attrs })
+      },
+    )
+
+  jest
+    .spyOn(GenericResource.prototype, 'delete')
+    .mockImplementation(async ({ keys }: { keys: ResourceAttributesType }) => {
+      return await resourceMock.delete({ keys })
     })
 })
 
 afterEach(() => {
-  resourceMock = new ResourceMock({
+  resourceMock = new GenericResourceMock({
     tableNameSuffix: itemName0,
     indexNameSuffix: 'by-user-id-and-name',
     items,
@@ -153,10 +173,11 @@ describe('routes', () => {
       expect(response.statusCode).toBe(200)
 
       const body = JSON.parse(response.body)
+
       const expectedItems = items.filter((i) => {
         return i.name === itemName0 && i.user_id === userId0
       })
-      expect(body).toEqual(Object.values(expectedItems))
+      expect(body).toEqual(expectedItems)
     })
   })
 
@@ -179,7 +200,15 @@ describe('routes', () => {
         method: 'GET',
         url: `/${fastifyConfig.register.prefix}/item/${itemName0}/not-existing-id`,
       })
+
       expect(response.statusCode).toBe(404)
+
+      const body = JSON.parse(response.body)
+      expect(body).toEqual({
+        code: '404',
+        error: 'not found',
+        details: { name: 'NotFoundError' },
+      })
     })
   })
 
@@ -198,7 +227,7 @@ describe('routes', () => {
   })
 
   describe(`GET /${fastifyConfig.register.prefix}/item/${itemName0}/${uuid1}`, () => {
-    it('get fails with 403', async () => {
+    it('get fails with 403 forbidden', async () => {
       const response = await service.inject({
         method: 'GET',
         url: `/${fastifyConfig.register.prefix}/item/${itemName0}/${uuid1}`,
@@ -207,9 +236,9 @@ describe('routes', () => {
 
       const body = JSON.parse(response.body)
       expect(body).toEqual({
-        code: 403,
+        code: '403',
         error: 'item forbidden',
-        name: 'ForbiddenError',
+        details: { name: 'ForbiddenError' },
       })
     })
   })
@@ -259,6 +288,13 @@ describe('routes', () => {
       })
 
       expect(responsePatch.statusCode).toBe(404)
+
+      const body = JSON.parse(responsePatch.body)
+      expect(body).toEqual({
+        code: '404',
+        error: 'not found',
+        details: { name: 'NotFoundError' },
+      })
     })
   })
 
@@ -285,7 +321,7 @@ describe('routes', () => {
   })
 
   describe(`PATCH /${fastifyConfig.register.prefix}/item/${itemName0}/${uuid1}`, () => {
-    it('update fails with 403', async () => {
+    it('update fails with 403 forbidden', async () => {
       const payload = { content: { desc: 'updated-content' } }
       const responsePatch = await service.inject({
         method: 'PATCH',
@@ -297,9 +333,9 @@ describe('routes', () => {
 
       const body = JSON.parse(responsePatch.body)
       expect(body).toEqual({
-        code: 403,
+        code: '403',
         error: 'item forbidden',
-        name: 'ForbiddenError',
+        details: { name: 'ForbiddenError' },
       })
     })
   })
@@ -312,6 +348,13 @@ describe('routes', () => {
       })
 
       expect(responseDelete.statusCode).toBe(404)
+
+      const body = JSON.parse(responseDelete.body)
+      expect(body).toEqual({
+        code: '404',
+        error: 'not found',
+        details: { name: 'NotFoundError' },
+      })
     })
   })
 
@@ -330,18 +373,33 @@ describe('routes', () => {
         method: 'GET',
         url: `/${fastifyConfig.register.prefix}/item/${itemName0}/${uuid0}`,
       })
+
       expect(responseGet.statusCode).toBe(404)
+
+      const bodyGet = JSON.parse(responseGet.body)
+      expect(bodyGet).toEqual({
+        code: '404',
+        error: 'not found',
+        details: { name: 'NotFoundError' },
+      })
     })
   })
 
   describe(`DELETE /${fastifyConfig.register.prefix}/item/${itemName0}/${uuid1}`, () => {
-    it('deletes fails with 403', async () => {
+    it('deletes fails with 403 forbidden', async () => {
       const responseDelete = await service.inject({
         method: 'DELETE',
         url: `/${fastifyConfig.register.prefix}/item/${itemName0}/${uuid1}`,
       })
 
       expect(responseDelete.statusCode).toBe(403)
+
+      const body = JSON.parse(responseDelete.body)
+      expect(body).toEqual({
+        code: '403',
+        error: 'item forbidden',
+        details: { name: 'ForbiddenError' },
+      })
     })
   })
 })
