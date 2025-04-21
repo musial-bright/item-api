@@ -7,5 +7,4 @@ const tablePrefix = `item-api-${stage}`
 
 export const tableNames = {
   item: `${tablePrefix}-item`,
-  user: `${tablePrefix}-user`,
 }

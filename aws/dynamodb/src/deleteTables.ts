@@ -5,8 +5,8 @@ const client = new DynamoDBClient({
   endpoint: endpoint,
   credentials: {
     accessKeyId: 'fake',
-    secretAccessKey: 'fake'
-  }
+    secretAccessKey: 'fake',
+  },
 })
 
 export const deleteItemTable = async (name: string) => {
@@ -23,5 +23,4 @@ export const deleteItemTable = async (name: string) => {
 
 export const deleteTables = async () => {
   await deleteItemTable(tableNames.item)
-  await deleteItemTable(tableNames.user)
 }

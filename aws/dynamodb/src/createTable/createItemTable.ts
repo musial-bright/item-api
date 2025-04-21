@@ -1,76 +1,26 @@
 import { CreateTableCommand } from '@aws-sdk/client-dynamodb'
 
+import { readCloudFromation } from '../readCloudFromation'
 import { tableNames } from '../config'
 import { dynamoClient } from './createTables'
 
 export const createItemTable = async () => {
   console.log('create table "item" ...')
-  const command = new CreateTableCommand({
-    TableName: tableNames.item,
-    AttributeDefinitions: [
-      {
-        AttributeName: 'id',
-        AttributeType: 'S',
-      },
-      {
-        AttributeName: 'name',
-        AttributeType: 'S',
-      },
-      {
-        AttributeName: 'user_id',
-        AttributeType: 'S',
-      },
-    ],
-    KeySchema: [
-      {
-        AttributeName: 'id',
-        KeyType: 'HASH',
-      },
-    ],
-    GlobalSecondaryIndexes: [
-      {
-        IndexName: `${tableNames.item}-by-name`,
-        KeySchema: [
-          {
-            AttributeName: 'name',
-            KeyType: 'HASH',
-          },
-        ],
-        Projection: {
-          ProjectionType: 'ALL',
+
+  const tableCF = readCloudFromation({
+    tableResoruceName: 'DynamoDBItems',
+    mapping: {
+      TableName: tableNames.item,
+      GlobalSecondaryIndexes: {
+        IndexNames: {
+          '${FunctionName}-${Environment}-item-by-name': `${tableNames.item}-item-by-name`,
+          '${FunctionName}-${Environment}-item-by-user-id': `${tableNames.item}-item-by-user-id`,
+          '${FunctionName}-${Environment}-item-by-user-id-and-name': `${tableNames.item}-item-by-user-id-and-name`,
         },
       },
-      {
-        IndexName: `${tableNames.item}-by-user-id`,
-        KeySchema: [
-          {
-            AttributeName: 'user_id',
-            KeyType: 'HASH',
-          },
-        ],
-        Projection: {
-          ProjectionType: 'ALL',
-        },
-      },
-      {
-        IndexName: `${tableNames.item}-by-user-id-and-name`,
-        KeySchema: [
-          {
-            AttributeName: 'user_id',
-            KeyType: 'HASH',
-          },
-          {
-            AttributeName: 'name',
-            KeyType: 'RANGE',
-          },
-        ],
-        Projection: {
-          ProjectionType: 'ALL',
-        },
-      },
-    ],
-    BillingMode: 'PAY_PER_REQUEST'
+    },
   })
+  const command = new CreateTableCommand(tableCF)
 
   const response = await dynamoClient().send(command)
   console.log(response)
