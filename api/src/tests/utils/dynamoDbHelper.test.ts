@@ -1,4 +1,5 @@
-import { expect, describe, it } from '@jest/globals'
+import { expect, describe, it, jest, beforeEach } from '@jest/globals'
+
 import {
   createQuery,
   CreateQueryInterface,
@@ -32,6 +33,10 @@ const conditions: IndexQueryCondition[] = [
     condition: '=',
   },
 ]
+
+beforeEach(() => {
+  jest.spyOn(console, 'warn').mockImplementation(() => {})
+})
 
 describe('createQuery()', () => {
   it('has empty conditions', () => {
@@ -117,5 +122,6 @@ describe('createQuery()', () => {
     }
 
     expect(createQuery(query)).toEqual(expectedQuery)
+    expect(console.warn).toBeCalled()
   })
 })
