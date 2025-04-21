@@ -1,9 +1,13 @@
-import { expect, describe, it, jest } from '@jest/globals'
+import { beforeEach, expect, describe, it, jest } from '@jest/globals'
 
 import { envEnvironment } from '../../config/envVariables'
 import { currentEnvironemnt } from '../../config/variableConfig'
 
 jest.mock('../../config/envVariables')
+
+beforeEach(() => {
+  jest.spyOn(console, 'error').mockImplementation(() => {})
+})
 
 const envEnvironmentMock = envEnvironment as jest.MockedFunction<
   typeof envEnvironment
@@ -15,6 +19,7 @@ describe('currentEnvironemnt', () => {
       envEnvironmentMock.mockImplementation(() => '')
 
       expect(currentEnvironemnt()).toEqual('development')
+      expect(console.error).toBeCalled()
     })
   })
 
@@ -23,6 +28,7 @@ describe('currentEnvironemnt', () => {
       envEnvironmentMock.mockImplementation(() => 'unsupported value')
 
       expect(currentEnvironemnt()).toEqual('development')
+      expect(console.error).toBeCalled()
     })
   })
 
