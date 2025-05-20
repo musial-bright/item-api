@@ -6,6 +6,7 @@ import authPlugin from './plugins/authPlugin'
 import healthCheckRoute from './routes/healthCheckRoute'
 import infoRoute from './routes/infoRoute'
 import itemRoute from './routes/itemRoute'
+import myItemRoute from './routes/myItemRoute'
 import errorHandler from './handler/errorHandler'
 
 const fastify: FastifyInstance = Fastify({
@@ -20,6 +21,7 @@ fastify.register(authPlugin)
 fastify.register(healthCheckRoute, { prefix: fastifyConfig.register.prefix })
 fastify.register(infoRoute, { prefix: fastifyConfig.register.prefix })
 fastify.register(itemRoute, { prefix: fastifyConfig.register.prefix })
+fastify.register(myItemRoute, { prefix: fastifyConfig.register.prefix })
 
 fastify.setErrorHandler(errorHandler)
 

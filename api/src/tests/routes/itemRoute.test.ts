@@ -8,6 +8,7 @@ import { IndexQueryCondition } from '../../utils/dynamoDbHelper'
 import GenericResourceMock from '../__helpers__/GenericResourceMock'
 import { currentUserFixture } from '../__fixtures__/currentUserFixture'
 import GenericResource from '../../entities/GenericResource'
+import { errorMessages } from '../../utils/errors'
 
 jest.mock('../../config/variableConfig', () => {
   return {
@@ -397,7 +398,7 @@ describe('routes', () => {
       const body = JSON.parse(responseDelete.body)
       expect(body).toEqual({
         code: '403',
-        error: 'item forbidden',
+        error: errorMessages.forbidden,
         details: { name: 'ForbiddenError' },
       })
     })

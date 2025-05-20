@@ -1,5 +1,15 @@
 import createError from 'http-errors'
 
+export const errorMessages = {
+  attrIsEmpty: (attr: string) => `'${attr}' is empty`,
+  forbidden: 'forbidden',
+  notFound: 'not found',
+  noUser: 'no user',
+  unauthorized: 'unauthorized',
+  missingPermission: (permission: string) =>
+    `missing permission '${permission}'`,
+}
+
 export const NotFoundError = ({ message }: { message?: string }) => {
   // CloudFront error pages will override 404
   if (message) {

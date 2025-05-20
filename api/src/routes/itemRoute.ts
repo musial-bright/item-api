@@ -2,6 +2,7 @@ import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
 
 import { schemaGet, schemaGetAll, schemaPatch, schemaPost } from './itemSchema'
 import {
+  errorMessages,
   ForbiddenError,
   NotFoundError,
   UnauthorizedError,
@@ -23,7 +24,7 @@ const routes = async (fastify: FastifyInstance, _options: any) => {
     async (request: FastifyRequest, reply: FastifyReply) => {
       const currentUser = getCurrentUser({ request })
       if (!currentUser || !currentUser.identifier) {
-        throw UnauthorizedError({ message: 'unauthorized' })
+        throw UnauthorizedError({ message: errorMessages.unauthorized })
       }
 
       const { name } = request.params as Record<string, string>
@@ -59,7 +60,7 @@ const routes = async (fastify: FastifyInstance, _options: any) => {
     async (request: FastifyRequest, reply: FastifyReply) => {
       const currentUser = getCurrentUser({ request })
       if (!currentUser || !currentUser.identifier) {
-        throw UnauthorizedError({ message: 'unauthorized' })
+        throw UnauthorizedError({ message: errorMessages.unauthorized })
       }
 
       const { id, name } = request.params as Record<string, string>
@@ -85,7 +86,7 @@ const routes = async (fastify: FastifyInstance, _options: any) => {
     async (request: FastifyRequest, reply: FastifyReply) => {
       const currentUser = getCurrentUser({ request })
       if (!currentUser || !currentUser.identifier) {
-        throw UnauthorizedError({ message: 'unauthorized' })
+        throw UnauthorizedError({ message: errorMessages.unauthorized })
       }
 
       const { name } = request.params as Record<string, string>
@@ -112,7 +113,7 @@ const routes = async (fastify: FastifyInstance, _options: any) => {
     async (request: FastifyRequest, reply: FastifyReply) => {
       const currentUser = getCurrentUser({ request })
       if (!currentUser || !currentUser.identifier) {
-        throw UnauthorizedError({ message: 'unauthorized' })
+        throw UnauthorizedError({ message: errorMessages.unauthorized })
       }
 
       const { name, id } = request.params as Record<string, string>
@@ -150,7 +151,7 @@ const routes = async (fastify: FastifyInstance, _options: any) => {
     async (request: FastifyRequest, reply: FastifyReply) => {
       const currentUser = getCurrentUser({ request })
       if (!currentUser || !currentUser.identifier) {
-        throw UnauthorizedError({ message: 'unauthorized' })
+        throw UnauthorizedError({ message: errorMessages.unauthorized })
       }
 
       const { id, name } = request.params as Record<string, string>
@@ -162,7 +163,7 @@ const routes = async (fastify: FastifyInstance, _options: any) => {
         throw NotFoundError({ message: 'not found' })
       }
       if (itemCheck.user_id !== currentUser.identifier) {
-        throw ForbiddenError({ message: 'item forbidden' })
+        throw ForbiddenError({ message: errorMessages.forbidden })
       }
 
       const result = await item.delete({ keys: { id } })
