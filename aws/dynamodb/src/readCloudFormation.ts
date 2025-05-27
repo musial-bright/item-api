@@ -16,11 +16,20 @@ export type Mapping = {
   }
 }
 
-export const readCloudFromation = ({ tableResoruceName, mapping }: { tableResoruceName: string; mapping: Mapping }) => {
-  const filePath = path.resolve(path.resolve('.'), '../cloud-formation/item-api-cf.yaml')
+export const readCloudFormation = ({
+  tableResourceName,
+  mapping,
+}: {
+  tableResourceName: string
+  mapping: Mapping
+}) => {
+  const filePath = path.resolve(
+    path.resolve('.'),
+    '../cloud-formation/item-api-cf.yaml',
+  )
   const doc = yaml.load(fs.readFileSync(filePath, 'utf8')) as CFDynamoDbType
 
-  const itemsTable = doc.Resources[tableResoruceName].Properties
+  const itemsTable = doc.Resources[tableResourceName].Properties
 
   return mapper(itemsTable, mapping)
 }
@@ -32,18 +41,20 @@ export const mapper = (itemsTable: any, mapping: Mapping) => {
   }
 
   if (mapping.GlobalSecondaryIndexes) {
-    // eslint-disable-next-line  @typescript-eslint/no-explicit-any
-    const updatedGlobalIndexes = (itemsTable.GlobalSecondaryIndexes as any[]).map((index: any) => {
-      const mappedIndexName = mapping.GlobalSecondaryIndexes?.IndexNames[index.IndexName['Fn::Sub']]
-      if (mappedIndexName) {
-        return {
-          ...index,
-          IndexName: mappedIndexName,
+    const updatedGlobalIndexes =
+      // eslint-disable-next-line  @typescript-eslint/no-explicit-any
+      (itemsTable.GlobalSecondaryIndexes as any[]).map((index: any) => {
+        const mappedIndexName =
+          mapping.GlobalSecondaryIndexes?.IndexNames[index.IndexName['Fn::Sub']]
+        if (mappedIndexName) {
+          return {
+            ...index,
+            IndexName: mappedIndexName,
+          }
         }
-      }
 
-      return index
-    })
+        return index
+      })
 
     itemsTable.GlobalSecondaryIndexes = updatedGlobalIndexes
   }

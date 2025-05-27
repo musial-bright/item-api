@@ -12,7 +12,7 @@
     "db-reset": "npx tsx src/resetDb",
     "db-start": "docker compose up",
     "dynamodb-admin": "npx dynamodb-admin --dynamo-endpoint=http://localhost:8000",
-    "lint": "eslint '**/*.ts' '**/*.js' --fix"
+    "lint": "eslint '**/*.ts' '**/*.js'"
   },
   "dependencies": {
     "@aws-sdk/client-dynamodb": "^3.716.0",

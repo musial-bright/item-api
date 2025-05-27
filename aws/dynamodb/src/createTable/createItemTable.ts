@@ -1,29 +1,48 @@
 import { CreateTableCommand } from '@aws-sdk/client-dynamodb'
+import readline from 'node:readline'
 
-import { readCloudFromation } from '../readCloudFromation'
 import { tableNames } from '../config'
 import { dynamoClient } from './createTables'
+import { readCloudFormation } from '../readCloudFormation'
+
+const Defaults = {
+  tableName: tableNames.item,
+  indexPrefix: tableNames.item,
+}
 
 export const createItemTable = async () => {
-  console.log('create table "item" ...')
+  console.log('createItemTable ...')
 
-  const tableCF = readCloudFromation({
-    tableResoruceName: 'DynamoDBItems',
+  const tableCF = readCloudFormation({
+    tableResourceName: 'DynamoDBItems',
     mapping: {
-      TableName: tableNames.item,
+      TableName: Defaults.tableName,
       GlobalSecondaryIndexes: {
         IndexNames: {
-          '${FunctionName}-${Environment}-item-by-name': `${tableNames.item}-item-by-name`,
-          '${FunctionName}-${Environment}-item-by-user-id': `${tableNames.item}-item-by-user-id`,
-          '${FunctionName}-${Environment}-item-by-user-id-and-name': `${tableNames.item}-item-by-user-id-and-name`,
+          '${FunctionName}-${Environment}-item-by-name': `${Defaults.indexPrefix}-item-by-name`,
+          '${FunctionName}-${Environment}-item-by-user-id': `${Defaults.indexPrefix}-item-by-user-id`,
+          '${FunctionName}-${Environment}-item-by-user-id-and-name': `${Defaults.indexPrefix}-item-by-user-id-and-name`,
         },
       },
     },
   })
-  const command = new CreateTableCommand(tableCF)
+  console.dir(tableCF, { depth: 10, colors: true })
+  const readLine = readline.createInterface({
+    input: process.stdin,
+    output: process.stdout,
+  })
 
-  const response = await dynamoClient().send(command)
-  console.log(response)
-  console.log('...done')
-  return response
+  readLine.question('Create this dynamodb table? [y/N]', async (answer) => {
+    let result = undefined
+    if (answer.toLowerCase() === 'y') {
+      const command = new CreateTableCommand(tableCF)
+      result = await dynamoClient().send(command)
+      console.log('...creation done.')
+    } else {
+      console.log('...creation canceled.')
+    }
+
+    readLine.close()
+    return result
+  })
 }
