@@ -398,3 +398,57 @@ describe('create', () => {
     expect(expectedItemAttrs).toEqual(attrs0)
   })
 })
+
+describe('update', () => {
+  it('has updated item', async () => {
+    const createdItem = await item0.create({ attrs: attrs0 })
+
+    const { id, ...expectedItemAttrs } = createdItem
+    expect(expectedItemAttrs).toEqual(attrs0)
+
+    const updateItem = await item0.update({
+      keys: { id },
+      attrs: {
+        ...attrs0,
+        additionalData: 'some new data',
+      },
+    })
+    const expectedUpdateItem = {
+      ...createdItem,
+      additionalData: 'some new data',
+    }
+
+    expect(updateItem).toEqual(expectedUpdateItem)
+
+    const reloadedItem = await item0.get({ keys: { id } })
+    expect(reloadedItem).toEqual(expectedUpdateItem)
+  })
+
+  describe('with illegal name change', () => {
+    it('has updated item without changing the name', async () => {
+      const createdItem = await item0.create({ attrs: attrs0 })
+
+      const { id, ...expectedItemAttrs } = createdItem
+      expect(expectedItemAttrs).toEqual(attrs0)
+
+      const updateItem = await item0.update({
+        keys: { id },
+        attrs: {
+          ...attrs0,
+          additionalData: 'some new data',
+          name: 'changed-name',
+        },
+      })
+      const expectedUpdateItem = {
+        ...createdItem,
+        additionalData: 'some new data',
+        name: item0.name,
+      }
+
+      expect(updateItem).toEqual(expectedUpdateItem)
+
+      const reloadedItem = await item0.get({ keys: { id } })
+      expect(reloadedItem).toEqual(expectedUpdateItem)
+    })
+  })
+})
