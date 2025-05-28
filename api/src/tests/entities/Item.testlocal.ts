@@ -452,3 +452,20 @@ describe('update', () => {
     })
   })
 })
+
+describe('delete', () => {
+  it('has deleted item', async () => {
+    const createdItem = await item0.create({ attrs: attrs0 })
+
+    const { id, ...expectedItemAttrs } = createdItem
+
+    expect(expectedItemAttrs).toEqual(attrs0)
+
+    const deletedItem = await item0.delete({ keys: { id } })
+
+    expect(deletedItem).toEqual(true)
+
+    const reloadedItem = await item0.get({ keys: { id } })
+    expect(reloadedItem).toEqual(undefined)
+  })
+})
