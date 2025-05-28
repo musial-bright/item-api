@@ -19,9 +19,9 @@ export const createItemTable = async () => {
       TableName: Defaults.tableName,
       GlobalSecondaryIndexes: {
         IndexNames: {
-          '${FunctionName}-${Environment}-item-by-name': `${Defaults.indexPrefix}-item-by-name`,
-          '${FunctionName}-${Environment}-item-by-user-id': `${Defaults.indexPrefix}-item-by-user-id`,
-          '${FunctionName}-${Environment}-item-by-user-id-and-name': `${Defaults.indexPrefix}-item-by-user-id-and-name`,
+          '${FunctionName}-${Environment}-item-by-name': `${Defaults.indexPrefix}-by-name`,
+          '${FunctionName}-${Environment}-item-by-user-id': `${Defaults.indexPrefix}-by-user-id`,
+          '${FunctionName}-${Environment}-item-by-user-id-and-name': `${Defaults.indexPrefix}-by-user-id-and-name`,
         },
       },
     },
