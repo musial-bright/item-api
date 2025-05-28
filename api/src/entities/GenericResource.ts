@@ -22,10 +22,10 @@ class GenericResource {
       endpoint: envDynamoDbEndpoint(),
       region: envDynamoDbRegion(),
       // TODO: remove in AWS - just for local testing
-      credentials: {
-        accessKeyId: 'fake',
-        secretAccessKey: 'fake',
-      },
+      // credentials: {
+      //   accessKeyId: 'fake',
+      //   secretAccessKey: 'fake',
+      // },
     })
     this.docClient = DynamoDBDocumentClient.from(this.client)
     this.tableName = tableName({ tableNameSuffix: tableNameSuffix })

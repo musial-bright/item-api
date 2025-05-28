@@ -15,6 +15,7 @@
     "lint": "eslint '**/*.ts' '**/*.js' --fix",
     "compile": "tsc",
     "test": "npm run compile && jest",
+    "testlocal": "npm run compile && jest --config jest.config.local.ts",
     "server": "npx tsx --env-file=.env src/server.ts"
   },
   "dependencies": {
