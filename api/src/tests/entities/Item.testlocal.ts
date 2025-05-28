@@ -77,14 +77,22 @@ afterEach(async () => {
 })
 
 describe('queryBy', () => {
+  beforeEach(async () => {
+    const createdItems0: ResourceAttributesType[] = []
+    for (const attrRef of [attrs0, attrs1]) {
+      const createdItem = await item0.create({ attrs: attrRef })
+      createdItems0.push(createdItem)
+    }
+
+    const createdItems1: ResourceAttributesType[] = []
+    for (const attrRef of [attrs2, attrs3]) {
+      const createdItem = await item1.create({ attrs: attrRef })
+      createdItems1.push(createdItem)
+    }
+  })
+
   describe('name', () => {
     it(`has items of name '${item0.name}'`, async () => {
-      const createdItems0: ResourceAttributesType[] = []
-      for (const attrRef of [attrs0, attrs1]) {
-        const createdItem = await item0.create({ attrs: attrRef })
-        createdItems0.push(createdItem)
-      }
-
       const getItems0ByName = await item0.queryBy({
         indexNameSuffix: 'by-name',
         conditions: [
@@ -128,12 +136,6 @@ describe('queryBy', () => {
     })
 
     it(`has items of name '${item1.name}'`, async () => {
-      const createdItems1: ResourceAttributesType[] = []
-      for (const attrRef of [attrs2, attrs3]) {
-        const createdItem = await item1.create({ attrs: attrRef })
-        createdItems1.push(createdItem)
-      }
-
       const getItems1ByName = await item1.queryBy({
         indexNameSuffix: 'by-name',
         conditions: [
@@ -177,14 +179,101 @@ describe('queryBy', () => {
     })
   })
 
+  describe('user_id', () => {
+    it(`has user '${user0}' items'`, async () => {
+      const getItems0ByUser0AndName = await item0.queryBy({
+        indexNameSuffix: 'by-user-id',
+        conditions: [
+          {
+            attrName: 'user_id',
+            attrValue: user0,
+            condition: '=',
+          },
+        ],
+      })
+
+      const getItems0ByUser0AndNameWithoutId = getItems0ByUser0AndName?.map(
+        (item) => {
+          // eslint-disable-next-line  @typescript-eslint/no-unused-vars
+          const { id, ...attrs } = item
+          return attrs
+        },
+      )
+
+      expect(getItems0ByUser0AndName).not.toBe(undefined)
+      expect(getItems0ByUser0AndName!.length).toEqual(3)
+      expect(getItems0ByUser0AndNameWithoutId).not.toBe(undefined)
+      expect(getItems0ByUser0AndNameWithoutId!.length).toEqual(3)
+      expect(
+        getItems0ByUser0AndNameWithoutId!.filter(
+          (i) => i.data.director === attrs0.data.director,
+        ).length,
+      ).toEqual(1)
+      expect(
+        getItems0ByUser0AndNameWithoutId!.filter(
+          (i) => i.data.director === attrs1.data.director,
+        ).length,
+      ).toEqual(1)
+      expect(
+        getItems0ByUser0AndNameWithoutId!.filter(
+          (i) => i.data.director === attrs2.data.director,
+        ).length,
+      ).toEqual(1)
+      expect(
+        getItems0ByUser0AndNameWithoutId!.filter(
+          (i) => i.data.director === attrs3.data.director,
+        ).length,
+      ).toEqual(0)
+    })
+
+    it(`has user '${user1}' items of name '${item1.name}'`, async () => {
+      const getItems1ByUser1AndName = await item1.queryBy({
+        indexNameSuffix: 'by-user-id',
+        conditions: [
+          {
+            attrName: 'user_id',
+            attrValue: user1,
+            condition: '=',
+          },
+        ],
+      })
+      const getItems1ByUser1AndNameWithoutId = getItems1ByUser1AndName?.map(
+        (item) => {
+          // eslint-disable-next-line  @typescript-eslint/no-unused-vars
+          const { id, ...attrs } = item
+          return attrs
+        },
+      )
+
+      expect(getItems1ByUser1AndName).not.toBe(undefined)
+      expect(getItems1ByUser1AndName!.length).toEqual(1)
+      expect(getItems1ByUser1AndNameWithoutId).not.toBe(undefined)
+      expect(getItems1ByUser1AndNameWithoutId!.length).toEqual(1)
+      expect(
+        getItems1ByUser1AndNameWithoutId!.filter(
+          (i) => i.data.director === attrs0.data.director,
+        ).length,
+      ).toEqual(0)
+      expect(
+        getItems1ByUser1AndNameWithoutId!.filter(
+          (i) => i.data.director === attrs1.data.director,
+        ).length,
+      ).toEqual(0)
+      expect(
+        getItems1ByUser1AndNameWithoutId!.filter(
+          (i) => i.data.director === attrs2.data.director,
+        ).length,
+      ).toEqual(0)
+      expect(
+        getItems1ByUser1AndNameWithoutId!.filter(
+          (i) => i.data.director === attrs3.data.director,
+        ).length,
+      ).toEqual(1)
+    })
+  })
+
   describe('user_id and name', () => {
     it(`has user '${user0}' items of name '${item0.name}'`, async () => {
-      const createdItems0: ResourceAttributesType[] = []
-      for (const attrRef of [attrs0, attrs1]) {
-        const createdItem = await item0.create({ attrs: attrRef })
-        createdItems0.push(createdItem)
-      }
-
       const getItems0ByUser0AndName = await item0.queryBy({
         indexNameSuffix: 'by-user-id-and-name',
         conditions: [
@@ -236,12 +325,6 @@ describe('queryBy', () => {
     })
 
     it(`has user '${user1}' items of name '${item1.name}'`, async () => {
-      const createdItems1: ResourceAttributesType[] = []
-      for (const attrRef of [attrs2, attrs3]) {
-        const createdItem = await item1.create({ attrs: attrRef })
-        createdItems1.push(createdItem)
-      }
-
       const getItems1ByUser1AndName = await item1.queryBy({
         indexNameSuffix: 'by-user-id-and-name',
         conditions: [
