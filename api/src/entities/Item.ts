@@ -1,6 +1,6 @@
 import { v4 as uuidv4 } from 'uuid'
 
-import { ItemType, ResourceAttributesType } from './types'
+import { ResourceAttributesType } from './types'
 import GenericResource from './GenericResource'
 
 class Item extends GenericResource {
@@ -12,11 +12,26 @@ class Item extends GenericResource {
     this.name = name
   }
 
-  async create({ attrs }: { attrs: ItemType }) {
+  async get({
+    keys,
+  }: {
+    keys: ResourceAttributesType
+  }): Promise<ResourceAttributesType | undefined> {
+    const item = await super.get({ keys })
+
+    if (item && item.name !== this.name) {
+      return undefined
+    }
+
+    return item
+  }
+
+  async create({ attrs }: { attrs: ResourceAttributesType }) {
     return super.create({
       attrs: {
         ...attrs,
         id: uuidv4(),
+        name: this.name,
       },
     })
   }
@@ -26,7 +41,7 @@ class Item extends GenericResource {
     attrs,
   }: {
     keys: ResourceAttributesType
-    attrs: ItemType
+    attrs: ResourceAttributesType
   }) {
     const id = keys.id as string
 
@@ -35,6 +50,7 @@ class Item extends GenericResource {
       attrs: {
         ...attrs,
         id: id,
+        name: this.name,
       },
     })
   }
