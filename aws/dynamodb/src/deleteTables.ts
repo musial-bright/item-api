@@ -10,14 +10,14 @@ const client = new DynamoDBClient({
 })
 
 export const deleteItemTable = async (name: string) => {
-  console.log(`delete table "${name}" ...`)
+  console.log(`Delete table "${name}" ...`)
   const command = new DeleteTableCommand({
     TableName: name,
   })
 
   const response = await client.send(command)
   console.log(response)
-  console.log('...done')
+  console.log(`... Delete table "${name}" done.`)
   return response
 }
 

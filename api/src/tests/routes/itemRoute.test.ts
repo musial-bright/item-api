@@ -1,10 +1,14 @@
 import { expect, describe, it, jest, afterEach, beforeAll } from '@jest/globals'
+import { v4 as uuidv4 } from 'uuid'
 
 import fastifyConfig from '../../config/fastifyConfig'
 import service from '../../service'
 
 import { ResourceAttributesType, ResourceType } from '../../entities/types'
-import { IndexQueryCondition } from '../../utils/dynamoDbHelper'
+import {
+  FilterExpression,
+  IndexQueryCondition,
+} from '../../utils/dynamoDbHelper'
 import GenericResourceMock from '../__helpers__/GenericResourceMock'
 import { currentUserFixture } from '../__fixtures__/currentUserFixture'
 import GenericResource from '../../entities/GenericResource'
@@ -67,6 +71,49 @@ const items: ResourceType[] = [
       items: [1, 2, 'three'],
     },
     user_id: userId0,
+    created_at: 1752652800763,
+    updated_at: 1752666420763,
+    created_at_iso: '2025-07-16T08:00:00.763Z',
+    updated_at_iso: '2025-07-16T11:47:00.763Z',
+  },
+  {
+    id: uuidv4(),
+    name: itemName0,
+    director: 'Stanley Kubrick',
+    age: 70,
+    quality: 'excellent',
+    birthday: '1928-07-26T00:00:00.000Z',
+    user_id: userId0,
+    created_at: 1752652800763,
+    updated_at: 1752666420763,
+    created_at_iso: '2025-07-16T08:00:00.763Z',
+    updated_at_iso: '2025-07-16T11:47:00.763Z',
+  },
+  {
+    id: uuidv4(),
+    name: itemName0,
+    director: 'Sofia Coppola',
+    age: 50,
+    quality: 'good',
+    birthday: '1971-05-14T00:00:00.000Z',
+    user_id: userId0,
+    created_at: 1752652800763,
+    updated_at: 1752666420763,
+    created_at_iso: '2025-07-16T08:00:00.763Z',
+    updated_at_iso: '2025-07-16T11:47:00.763Z',
+  },
+  {
+    id: uuidv4(),
+    name: itemName0,
+    director: 'David Fincher',
+    age: 60,
+    quality: 'good',
+    birthday: '1962-08-28T00:00:00.000Z',
+    user_id: userId0,
+    created_at: 1752652800763,
+    updated_at: 1752666420763,
+    created_at_iso: '2025-07-16T08:00:00.763Z',
+    updated_at_iso: '2025-07-16T11:47:00.763Z',
   },
   {
     id: uuid1,
@@ -76,6 +123,10 @@ const items: ResourceType[] = [
       items: ['2001', 'Full Metal Jacket'],
     },
     user_id: userId1,
+    created_at: 1752652800763,
+    updated_at: 1752666420763,
+    created_at_iso: '2025-07-16T08:00:00.763Z',
+    updated_at_iso: '2025-07-16T11:47:00.763Z',
   },
   {
     id: uuid2,
@@ -85,6 +136,10 @@ const items: ResourceType[] = [
       items: [],
     },
     user_id: userId2,
+    created_at: 1752652800763,
+    updated_at: 1752666420763,
+    created_at_iso: '2025-07-16T08:00:00.763Z',
+    updated_at_iso: '2025-07-16T11:47:00.763Z',
   },
   {
     id: uuid3,
@@ -93,6 +148,10 @@ const items: ResourceType[] = [
       desc: 'test content 3',
       items: [],
     },
+    created_at: 1752652800763,
+    updated_at: 1752666420763,
+    created_at_iso: '2025-07-16T08:00:00.763Z',
+    updated_at_iso: '2025-07-16T11:47:00.763Z',
   },
 ]
 
@@ -109,13 +168,16 @@ beforeAll(() => {
       async ({
         indexNameSuffix,
         conditions,
+        filterExpressions,
       }: {
         indexNameSuffix: string
         conditions: IndexQueryCondition[]
+        filterExpressions?: FilterExpression[]
       }) => {
         return resourceMock.queryBy({
           indexNameSuffix,
           conditions,
+          filterExpressions,
         })
       },
     )
@@ -175,10 +237,17 @@ describe('routes', () => {
 
       const body = JSON.parse(response.body)
 
-      const expectedItems = items.filter((i) => {
+      const expectedItemsRaw = items.filter((i) => {
         return i.name === itemName0 && i.user_id === userId0
       })
-      expect(body).toEqual(expectedItems)
+
+      const expectedItems = expectedItemsRaw.map((item) => {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const { user_id, ...sanisanitizedItem } = item
+        return sanisanitizedItem
+      })
+
+      expect(body.results).toEqual(expectedItems)
     })
   })
 
@@ -191,7 +260,7 @@ describe('routes', () => {
       expect(response.statusCode).toBe(200)
 
       const body = JSON.parse(response.body)
-      expect(body).toEqual([])
+      expect(body.results).toEqual([])
     })
   })
 
@@ -222,8 +291,14 @@ describe('routes', () => {
       expect(response.statusCode).toBe(200)
 
       const body = JSON.parse(response.body)
-      const item = items.find((i) => i.id === uuid0)
-      expect(body).toEqual(item)
+      const itemRaw = items.find((i) => i.id === uuid0)
+      const item = { ...itemRaw }
+
+      expect(body.created_at).toEqual(item.created_at)
+      expect(body.id).toEqual(item.id)
+      expect(body.name).toEqual(item.name)
+      expect(body.updated_at).toEqual(item.updated_at)
+      expect(body.user_id).toEqual(undefined)
     })
   })
 
@@ -238,7 +313,7 @@ describe('routes', () => {
       const body = JSON.parse(response.body)
       expect(body).toEqual({
         code: '403',
-        error: 'item forbidden',
+        error: errorMessages.forbidden,
         details: { name: 'ForbiddenError' },
       })
     })
@@ -261,21 +336,24 @@ describe('routes', () => {
         content: payload.content,
         user_id: userId0,
       }
-      const { id, name, content } = JSON.parse(responsePost.body)
-      expect(name).toEqual(expectedPostBody.name)
-      expect(content).toEqual(expectedPostBody.content)
+      const responsePostBody = JSON.parse(responsePost.body)
+      expect(responsePostBody.name).toEqual(expectedPostBody.name)
+      expect(responsePostBody.content).toEqual(expectedPostBody.content)
 
       const responseGet = await service.inject({
         method: 'GET',
-        url: `/${fastifyConfig.register.prefix}/item/${itemName0}/${id}`,
+        url: `/${fastifyConfig.register.prefix}/item/${itemName0}/${responsePostBody.id}`,
       })
       expect(responseGet.statusCode).toBe(200)
 
       const bodyGet = JSON.parse(responseGet.body)
-      expect(bodyGet).toEqual({
-        ...expectedPostBody,
-        id,
-      })
+      expect(bodyGet.id).toEqual(responsePostBody.id)
+      expect(bodyGet.name).toEqual(expectedPostBody.name)
+      expect(bodyGet.user_id).toEqual(undefined)
+      expect(bodyGet.content).toEqual(expectedPostBody.content)
+      expect(bodyGet.created_at).not.toBe(undefined)
+      expect(bodyGet.updated_at).not.toBe(undefined)
+      expect(bodyGet.created_at).toEqual(bodyGet.updated_at)
     })
   })
 
@@ -315,9 +393,14 @@ describe('routes', () => {
         id: body.id,
         name: itemName0,
         content: payload.content,
-        user_id: userId0,
       }
-      expect(body).toEqual(expectedPostBody)
+      expect(body.id).not.toBe(undefined)
+      expect(body.name).toEqual(expectedPostBody.name)
+      expect(body.user_id).toEqual(undefined)
+      expect(body.content).toEqual(expectedPostBody.content)
+      expect(body.created_at).not.toBe(undefined)
+      expect(body.updated_at).not.toBe(undefined)
+      expect(body.created_at < body.updated_at).toBeTruthy()
     })
   })
 
@@ -335,7 +418,7 @@ describe('routes', () => {
       const body = JSON.parse(responsePatch.body)
       expect(body).toEqual({
         code: '403',
-        error: 'item forbidden',
+        error: errorMessages.forbidden,
         details: { name: 'ForbiddenError' },
       })
     })

@@ -9,7 +9,7 @@ const stage = currentEnvironemnt()
  * @returns `string` with `<prefix>-<stage>-<suffix>`
  */
 export const tableName = ({ tableNameSuffix }: { tableNameSuffix: string }) => {
-  return `${fastifyConfig.register.prefix}-${stage}-${tableNameSuffix}`
+  return [fastifyConfig.register.prefix, stage, tableNameSuffix].join('-')
 }
 
 export const tableIndexName = ({
