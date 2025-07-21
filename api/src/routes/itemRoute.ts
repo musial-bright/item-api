@@ -1,40 +1,51 @@
 import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
 
-import { schemaGet, schemaGetAll, schemaPatch, schemaPost } from './itemSchema'
+import { IndexPathResponseType } from './types'
+import {
+  schemaItemDelete,
+  schemaItemGet,
+  schemaItemsGet,
+  schemaItemPatch,
+  schemaItemPost,
+} from './itemSchema'
 import {
   errorMessages,
   ForbiddenError,
   NotFoundError,
   UnauthorizedError,
 } from '../utils/errors'
-import { ResourceType } from '../entities/types'
 import Item from '../entities/Item'
 import { getCurrentUser } from '../decorator/currentUser'
+import { getFilterExpressions } from '../utils/requestFilter'
+import { filterItems } from '../utils/requestOrder'
+import { getRequestContinuation } from '../utils/requestContinuation'
 
 const indexPath = '/item/:name'
 const idPath = [indexPath, ':id'].join('/')
-
-type BodyType = { content: ResourceType }
 
 // eslint-disable-next-line  @typescript-eslint/no-explicit-any
 const routes = async (fastify: FastifyInstance, _options: any) => {
   fastify.get(
     indexPath,
-    schemaGetAll,
+    schemaItemsGet,
     async (request: FastifyRequest, reply: FastifyReply) => {
       const currentUser = getCurrentUser({ request })
       if (!currentUser || !currentUser.identifier) {
+        // TODO: message: 'no user'
         throw UnauthorizedError({ message: errorMessages.unauthorized })
       }
 
       const { name } = request.params as Record<string, string>
 
+      const filterExpressions = getFilterExpressions(request)
+      const continuation = getRequestContinuation(request)
+
       if (name === '') {
-        throw NotFoundError({ message: 'name is empty' })
+        throw NotFoundError({ message: errorMessages.attrIsEmpty('name') })
       }
 
       const item = new Item(name)
-      const result = await item.queryBy({
+      const queryResult = await item.queryBy({
         indexNameSuffix: 'by-user-id-and-name',
         conditions: [
           {
@@ -48,15 +59,33 @@ const routes = async (fastify: FastifyInstance, _options: any) => {
             condition: '=',
           },
         ],
+        filterExpressions:
+          filterExpressions.length > 0 ? filterExpressions : undefined,
+        continuation,
       })
 
-      return reply.send(result)
+      const sanisanitizedResults = queryResult.items
+        ? filterItems(request, queryResult.items).map((result) => {
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            const { user_id, ...sanisanitizedResult } = result
+            return sanisanitizedResult
+          })
+        : []
+
+      const responsePayload: IndexPathResponseType = {
+        results: sanisanitizedResults,
+      }
+      if (queryResult.continuation) {
+        responsePayload.continuation = queryResult.continuation
+      }
+
+      return reply.send(responsePayload)
     },
   )
 
   fastify.get(
     idPath,
-    schemaGet,
+    schemaItemGet,
     async (request: FastifyRequest, reply: FastifyReply) => {
       const currentUser = getCurrentUser({ request })
       if (!currentUser || !currentUser.identifier) {
@@ -69,20 +98,23 @@ const routes = async (fastify: FastifyInstance, _options: any) => {
 
       const result = await item.get({ keys: { id } })
       if (!result) {
-        throw NotFoundError({ message: 'not found' })
+        throw NotFoundError({ message: errorMessages.notFound })
       }
 
       if (result.user_id !== currentUser.identifier) {
-        throw ForbiddenError({ message: 'item forbidden' })
+        throw ForbiddenError({ message: errorMessages.forbidden })
       }
 
-      return reply.send(result)
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { user_id, ...sanisanitizedResult } = result
+
+      return reply.send(sanisanitizedResult)
     },
   )
 
   fastify.post(
     indexPath,
-    schemaPost,
+    schemaItemPost,
     async (request: FastifyRequest, reply: FastifyReply) => {
       const currentUser = getCurrentUser({ request })
       if (!currentUser || !currentUser.identifier) {
@@ -90,26 +122,30 @@ const routes = async (fastify: FastifyInstance, _options: any) => {
       }
 
       const { name } = request.params as Record<string, string>
-      const { content } = request.body as BodyType
+      // eslint-disable-next-line  @typescript-eslint/no-explicit-any
+      const body = request.body as Record<string, any>
 
       const item = new Item(name)
       const result = await item.create({
         attrs: {
-          name: name,
-          content: content,
+          ...body,
+          name,
           user_id: currentUser.identifier,
         },
       })
 
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { user_id, ...sanisanitizedResult } = result
+
       reply.statusCode = 201
 
-      return reply.send(result)
+      return reply.send(sanisanitizedResult)
     },
   )
 
   fastify.patch(
     idPath,
-    schemaPatch,
+    schemaItemPatch,
     async (request: FastifyRequest, reply: FastifyReply) => {
       const currentUser = getCurrentUser({ request })
       if (!currentUser || !currentUser.identifier) {
@@ -117,37 +153,41 @@ const routes = async (fastify: FastifyInstance, _options: any) => {
       }
 
       const { name, id } = request.params as Record<string, string>
-      const { content } = request.body as BodyType
+      // eslint-disable-next-line  @typescript-eslint/no-explicit-any
+      const body = request.body as Record<string, any>
 
       const item = new Item(name)
 
       const itemCheck = await item.get({ keys: { id } })
       if (!itemCheck) {
-        throw NotFoundError({ message: 'not found' })
+        throw NotFoundError({ message: errorMessages.notFound })
       }
       if (itemCheck.user_id !== currentUser.identifier) {
-        throw ForbiddenError({ message: 'item forbidden' })
+        throw ForbiddenError({ message: errorMessages.forbidden })
       }
 
       const result = await item.update({
         keys: { id },
         attrs: {
-          content: content,
+          ...body,
           name: name,
         },
       })
 
       if (!result) {
-        throw NotFoundError({ message: 'not found' })
+        throw NotFoundError({ message: errorMessages.notFound })
       }
 
-      return reply.send(result)
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { user_id, ...sanisanitizedResult } = result
+
+      return reply.send(sanisanitizedResult)
     },
   )
 
   fastify.delete(
     idPath,
-    schemaGet,
+    schemaItemDelete,
     async (request: FastifyRequest, reply: FastifyReply) => {
       const currentUser = getCurrentUser({ request })
       if (!currentUser || !currentUser.identifier) {
@@ -160,7 +200,7 @@ const routes = async (fastify: FastifyInstance, _options: any) => {
 
       const itemCheck = await item.get({ keys: { id } })
       if (!itemCheck) {
-        throw NotFoundError({ message: 'not found' })
+        throw NotFoundError({ message: errorMessages.notFound })
       }
       if (itemCheck.user_id !== currentUser.identifier) {
         throw ForbiddenError({ message: errorMessages.forbidden })
@@ -169,12 +209,12 @@ const routes = async (fastify: FastifyInstance, _options: any) => {
       const result = await item.delete({ keys: { id } })
 
       if (!result) {
-        throw NotFoundError({ message: 'not found' })
+        throw NotFoundError({ message: errorMessages.notFound })
       }
 
       reply.statusCode = 204
 
-      return reply.send(undefined)
+      return reply.send({})
     },
   )
 }

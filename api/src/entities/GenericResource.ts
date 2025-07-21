@@ -7,10 +7,19 @@ import {
   QueryCommand,
 } from '@aws-sdk/lib-dynamodb'
 
-import { ResourceAttributesType, ResourceType } from './types'
+import {
+  QueryByResultType,
+  QueryByType,
+  ResourceAttributesType,
+  ResourceType,
+} from './types'
 import { tableName } from '../utils/tableName'
 import { envDynamoDbEndpoint, envDynamoDbRegion } from '../config/envVariables'
-import { createQuery, IndexQueryCondition } from '../utils/dynamoDbHelper'
+import {
+  convertContinuationTokenToLastEvaluatedKey,
+  convertLastEvaluatedKeyToContinuationToken,
+  createQuery,
+} from '../utils/dynamoDbHelper'
 
 class GenericResource {
   client: DynamoDBClient
@@ -21,7 +30,11 @@ class GenericResource {
     this.client = new DynamoDBClient({
       endpoint: envDynamoDbEndpoint(),
       region: envDynamoDbRegion(),
-      // TODO: remove in AWS - just for local testing
+      // Comment in for local testing if your .aws/credentials has no [default]
+      // Alternativally you can use this in .aws/credentials
+      // [default]
+      //   aws_access_key_id=fake
+      //   aws_secret_access_key=fake
       // credentials: {
       //   accessKeyId: 'fake',
       //   secretAccessKey: 'fake',
@@ -31,23 +44,51 @@ class GenericResource {
     this.tableName = tableName({ tableNameSuffix: tableNameSuffix })
   }
 
+  /**
+   * Query the resource via an index by given conditions and filter expressions.
+   * This method is intended to be overridden by subclasses.
+   *
+   * @param param0
+   *  `indexNameSuffix` is the suffix of the index name to query, i.e. `by-user-id-and-name`.
+   *  `conditions` contain one or two `IndexQueryCondition`s.
+   *  `filterExpressions` are optional filter expressions to apply to the query.
+   *  `continuation` is an optional continuation token for pagination.
+   *  `limitUseWithCaution` is a parameter that should be used with caution
+   *    because it is not the same as in SQL.
+   * @returns
+   */
   async queryBy({
     indexNameSuffix,
     conditions,
-  }: {
-    indexNameSuffix: string
-    conditions: IndexQueryCondition[]
-  }): Promise<ResourceType[] | undefined> {
+    filterExpressions,
+    continuation,
+    limitUseWithCaution,
+  }: QueryByType): Promise<QueryByResultType> {
     const queryCommand = createQuery({
       tableName: this.tableName,
       indexNameSuffix,
       conditions,
+      filterExpressions,
+      exclusiveStartKey: continuation
+        ? convertContinuationTokenToLastEvaluatedKey(continuation)
+        : undefined,
+      limitUseWithCaution,
     })
 
     const command = new QueryCommand(queryCommand)
     const response = await this.docClient.send(command)
 
-    return response.Items
+    const result: QueryByResultType = {
+      items: response.Items,
+    }
+
+    if (response.LastEvaluatedKey) {
+      result.continuation = convertLastEvaluatedKeyToContinuationToken(
+        response.LastEvaluatedKey,
+      )
+    }
+
+    return result
   }
 
   async get({
@@ -69,7 +110,14 @@ class GenericResource {
   }: {
     attrs: ResourceAttributesType
   }): Promise<ResourceAttributesType> {
-    const item: ResourceType = { ...attrs }
+    const createdAt = new Date()
+    const item: ResourceType = {
+      ...attrs,
+      created_at: createdAt.getTime(),
+      updated_at: createdAt.getTime(),
+      created_at_iso: createdAt.toISOString(),
+      updated_at_iso: createdAt.toISOString(),
+    }
 
     const command = new PutCommand({
       TableName: this.tableName,
@@ -93,9 +141,18 @@ class GenericResource {
       return
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { id, created_at, created_at_iso, user_id, name, ...restAttrs } =
+      attrs
+
+    const updatedAt = new Date()
     const updatedItem: ResourceAttributesType = {
       ...existingItem,
-      ...attrs,
+      ...restAttrs,
+      created_at: existingItem.created_at || updatedAt.getTime(),
+      created_at_iso: existingItem.created_at_iso || updatedAt.toISOString(),
+      updated_at: updatedAt.getTime(),
+      updated_at_iso: updatedAt.toISOString(),
     }
 
     const command = new PutCommand({

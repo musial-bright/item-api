@@ -1,6 +1,24 @@
-import { ResourceAttributesType, ResourceType } from '../../entities/types'
+import {
+  QueryByResultType,
+  QueryByType,
+  ResourceAttributesType,
+  ResourceType,
+} from '../../entities/types'
 import { tableIndexName, tableName } from '../../utils/tableName'
-import { IndexQueryCondition } from '../../utils/dynamoDbHelper'
+import { AttrValueType } from '../../utils/dynamoDbHelper'
+import { getValidDate } from '../../utils/languageTools'
+
+const convertValue = (value: AttrValueType): string | number | Date => {
+  let convertedValue: string | number | Date = value
+  if (typeof value === 'string') {
+    const validDate = getValidDate(value)
+    if (validDate) {
+      convertedValue = validDate
+    }
+  }
+
+  return convertedValue
+}
 
 export type TablesType = {
   tableNameSuffix: string
@@ -37,24 +55,24 @@ class GenericResourceMock {
   async queryBy({
     indexNameSuffix,
     conditions,
-  }: {
-    indexNameSuffix: string
-    conditions: IndexQueryCondition[]
-  }) {
+    filterExpressions,
+  }: QueryByType): Promise<QueryByResultType> {
     if (conditions.length < 1 || conditions.length > 2) {
-      return []
+      return { items: [] }
     }
 
+    let results: ResourceType[] = []
+
     if (indexNameSuffix === 'by-name') {
-      return this.table.items.filter((item) => {
+      results = this.table.items.filter((item) => {
         return item.name === conditions[0].attrValue
       })
     } else if (indexNameSuffix === 'by-user-id') {
-      return this.table.items.filter((item) => {
+      results = this.table.items.filter((item) => {
         return item.user_id === conditions[0].attrValue
       })
     } else if (indexNameSuffix === 'by-user-id-and-name') {
-      return this.table.items.filter((item) => {
+      results = this.table.items.filter((item) => {
         const searchResults: boolean[] = []
         conditions.forEach((condition) => {
           if (condition.attrName === 'user_id') {
@@ -70,7 +88,40 @@ class GenericResourceMock {
       })
     }
 
-    return []
+    for (const filterExpression of filterExpressions || []) {
+      const attrValue = convertValue(filterExpression.attrValue)
+
+      if (filterExpression.condition === '>') {
+        results = results.filter((item) => {
+          const itemValue = convertValue(item[filterExpression.attrName])
+          return itemValue > attrValue
+        })
+      } else if (filterExpression.condition === '>=') {
+        results = results.filter((item) => {
+          const itemValue = convertValue(item[filterExpression.attrName])
+          return itemValue >= attrValue
+        })
+      } else if (filterExpression.condition === '<') {
+        results = results.filter((item) => {
+          const itemValue = convertValue(item[filterExpression.attrName])
+          return itemValue < attrValue
+        })
+      } else if (filterExpression.condition === '<=') {
+        results = results.filter((item) => {
+          const itemValue = convertValue(item[filterExpression.attrName])
+          return itemValue <= attrValue
+        })
+      } else if (filterExpression.condition === '=') {
+        results = results.filter((item) => {
+          const itemValue = convertValue(item[filterExpression.attrName])
+          return itemValue === attrValue
+        })
+      }
+    }
+
+    return {
+      items: results,
+    }
   }
 
   async get({
@@ -93,7 +144,14 @@ class GenericResourceMock {
   }: {
     attrs: ResourceAttributesType
   }): Promise<ResourceAttributesType> {
-    const item: ResourceType = { ...attrs }
+    const createdAt = new Date()
+    const item: ResourceType = {
+      ...attrs,
+      created_at: createdAt.getTime(),
+      updated_at: createdAt.getTime(),
+      created_at_iso: createdAt.toISOString(),
+      updated_at_iso: createdAt.toISOString(),
+    }
 
     this.table.items.push(item)
 
@@ -121,9 +179,12 @@ class GenericResourceMock {
 
     const existingItem = this.table.items[index]
 
+    const updatedAt = new Date()
     const updatedItem = {
       ...existingItem,
       ...attrs,
+      updated_at: updatedAt.getTime(),
+      updated_at_iso: updatedAt.toISOString(),
     }
     this.table.items[index] = { ...updatedItem }
 

@@ -16,4 +16,5 @@ export const dynamoClient = () => {
 export const createTables = async () => {
   console.log('createTables() ...')
   await createItemTable()
+  console.log('...createTables() done.')
 }

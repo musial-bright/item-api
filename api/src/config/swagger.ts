@@ -12,9 +12,9 @@ const SwaggerConfig: SwaggerOptions = {
   openapi: {
     openapi: '3.0.0',
     info: {
-      title: 'Generic API',
-      description: 'Swagger for Generic API',
-      version: '1.0.0',
+      title: 'Generic Item API',
+      description: 'Generic Item API',
+      version: '1.2.0',
     },
     servers: [
       {
