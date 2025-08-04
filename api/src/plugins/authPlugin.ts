@@ -14,10 +14,7 @@ export interface AuthPluginOptions {
   currentUser: CurrentUserType | undefined
 }
 
-const authPluginAsync: FastifyPluginAsync<AuthPluginOptions> = async (
-  fastify,
-  _options,
-) => {
+const authPluginAsync: FastifyPluginAsync = async (fastify, _options) => {
   fastify.decorateRequest('currentUser', undefined)
 
   fastify.addHook('onRequest', authHook)
