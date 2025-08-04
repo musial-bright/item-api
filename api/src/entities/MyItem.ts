@@ -1,4 +1,4 @@
-import { ResourceAttributesType } from './types'
+import { QueryByResultType, QueryByType, ResourceAttributesType } from './types'
 import GenericResource from './GenericResource'
 
 export const IdPartSeparator = '--'
@@ -16,6 +16,18 @@ class MyItem extends GenericResource {
 
   identifier(): string {
     return [this.userId, this.name].join(IdPartSeparator)
+  }
+
+  /* eslint-disable @typescript-eslint/no-unused-vars */
+  async queryBy({
+    indexNameSuffix,
+    conditions,
+    filterExpressions,
+    continuation,
+    limitUseWithCaution,
+  }: QueryByType): Promise<QueryByResultType> {
+    /* eslint-enable @typescript-eslint/no-unused-vars */
+    throw Error('MyItem queryBy not supported')
   }
 
   async get(): Promise<ResourceAttributesType | undefined> {
