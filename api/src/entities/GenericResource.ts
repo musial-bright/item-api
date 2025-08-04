@@ -7,12 +7,7 @@ import {
   QueryCommand,
 } from '@aws-sdk/lib-dynamodb'
 
-import {
-  QueryByResultType,
-  QueryByType,
-  ResourceAttributesType,
-  ResourceType,
-} from './types'
+import { QueryByResultType, QueryByType, ResourceAttributesType } from './types'
 import { tableName } from '../utils/tableName'
 import { envDynamoDbEndpoint, envDynamoDbRegion } from '../config/envVariables'
 import {
@@ -110,8 +105,16 @@ class GenericResource {
   }: {
     attrs: ResourceAttributesType
   }): Promise<ResourceAttributesType> {
+    const id = attrs.id as string
+    if (id) {
+      const existingItem = await this.get({ keys: { id } })
+      if (existingItem) {
+        return existingItem
+      }
+    }
+
     const createdAt = new Date()
-    const item: ResourceType = {
+    const item: ResourceAttributesType = {
       ...attrs,
       created_at: createdAt.getTime(),
       updated_at: createdAt.getTime(),

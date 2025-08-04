@@ -144,6 +144,14 @@ class GenericResourceMock {
   }: {
     attrs: ResourceAttributesType
   }): Promise<ResourceAttributesType> {
+    const id = attrs.id as string
+    if (id) {
+      const existingItem = await this.get({ keys: { id } })
+      if (existingItem) {
+        return existingItem
+      }
+    }
+
     const createdAt = new Date()
     const item: ResourceType = {
       ...attrs,

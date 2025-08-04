@@ -14,16 +14,20 @@ class MyItem extends GenericResource {
     this.name = name
   }
 
+  identifier(): string {
+    return [this.userId, this.name].join(IdPartSeparator)
+  }
+
   async get(): Promise<ResourceAttributesType | undefined> {
     return super.get({
       keys: {
-        id: [this.userId, this.name].join(IdPartSeparator),
+        id: this.identifier(),
       },
     })
   }
 
   async create({ attrs }: { attrs: ResourceAttributesType }) {
-    const id = [this.userId, this.name].join(IdPartSeparator)
+    const id = this.identifier()
     const name = this.name
     const user_id = this.userId
 
@@ -38,7 +42,7 @@ class MyItem extends GenericResource {
   }
 
   async update({ attrs }: { attrs: ResourceAttributesType }) {
-    const id = [this.userId, this.name].join(IdPartSeparator)
+    const id = this.identifier()
     const name = this.name
     const user_id = this.userId
 
@@ -54,7 +58,7 @@ class MyItem extends GenericResource {
   }
 
   async delete(): Promise<boolean> {
-    const id = [this.userId, this.name].join(IdPartSeparator)
+    const id = this.identifier()
 
     return super.delete({ keys: { id } })
   }
