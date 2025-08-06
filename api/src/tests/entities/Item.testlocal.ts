@@ -517,11 +517,11 @@ describe('queryBy', () => {
   })
 })
 
-describe.only('get', () => {
+describe('get', () => {
   it('has no item', async () => {
     const getItem = await item0.get({ keys: { id: 'not-existing-id' } })
 
-    expect(getItem).toEqual(123)
+    expect(getItem).toEqual(undefined)
   })
 
   it('has item', async () => {
