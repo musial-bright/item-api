@@ -181,3 +181,33 @@ describe('create', () => {
     )
   })
 })
+
+describe('update', () => {
+  it('has updated item', async () => {
+    const existingItem = (await user0item0.get()) as ResourceAttributesType
+
+    /* eslint-disable @typescript-eslint/no-unused-vars */
+    const {
+      id,
+      created_at,
+      updated_at,
+      created_at_iso,
+      updated_at_iso,
+      ...expectedItemAttrs
+    } = existingItem
+    /* eslint-enable @typescript-eslint/no-unused-vars */
+    expect(expectedItemAttrs).toEqual(user0item0attr0)
+
+    const newAttribute = {
+      newAttr: 'a new attribute',
+    }
+
+    const updatedItem = await user0item0.update({ attrs: newAttribute}) as ResourceAttributesType
+    expect(updatedItem.newAttr).toEqual(newAttribute.newAttr)
+    expect(updatedItem.updated_at > existingItem.updated_at).toBeTruthy()
+  })
+})
+
+describe('delete', () => {
+  // TODO: implement tests
+})
