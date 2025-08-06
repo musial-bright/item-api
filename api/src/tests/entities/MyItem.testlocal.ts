@@ -18,10 +18,10 @@ jest.mock('../../config/envVariables', () => {
 const user0 = 'user-jest'
 const user1 = 'user-api-key'
 
-const user0item0 = new MyItem(user0, 'test-item')
-const user0item1 = new MyItem(user0, 'test-other-item')
+const user0item0 = new MyItem(user0, 'test-my-item')
+const user0item1 = new MyItem(user0, 'test-other-my-item')
 
-const user1item1 = new MyItem(user1, 'test-other-item')
+const user1item1 = new MyItem(user1, 'test-other-my-item')
 
 const notExistingItem = new MyItem(user0, 'test-item-not-existing')
 const createItem = new MyItem(user0, 'test-item-create')
@@ -71,6 +71,24 @@ beforeAll(async () => {
   }
 })
 
+beforeEach(async () => {
+  const createdItems: ResourceAttributesType[] = []
+  for (const attrRef of [user0item0attr0]) {
+    const createdItem = await user0item0.create({ attrs: attrRef })
+    createdItems.push(createdItem)
+  }
+
+  for (const attrRef of [user0item1attrs1]) {
+    const createdItem = await user0item1.create({ attrs: attrRef })
+    createdItems.push(createdItem)
+  }
+
+  for (const attrRef of [user1item1attrs0]) {
+    const createdItem = await user1item1.create({ attrs: attrRef })
+    createdItems.push(createdItem)
+  }
+})
+
 afterEach(async () => {
   for (const itemRef of allItemAttrs) {
     await cleanupDb(itemRef)
@@ -78,24 +96,6 @@ afterEach(async () => {
 })
 
 describe('get', () => {
-  beforeEach(async () => {
-    const createdItems: ResourceAttributesType[] = []
-    for (const attrRef of [user0item0attr0]) {
-      const createdItem = await user0item0.create({ attrs: attrRef })
-      createdItems.push(createdItem)
-    }
-
-    for (const attrRef of [user0item1attrs1]) {
-      const createdItem = await user0item1.create({ attrs: attrRef })
-      createdItems.push(createdItem)
-    }
-
-    for (const attrRef of [user1item1attrs0]) {
-      const createdItem = await user1item1.create({ attrs: attrRef })
-      createdItems.push(createdItem)
-    }
-  })
-
   it('has no item', async () => {
     const getItem = await notExistingItem.get()
 
@@ -151,5 +151,33 @@ describe('create', () => {
     const getItem = await createItem.get()
 
     expect(getItem).toEqual(createdItem)
+  })
+
+  it('has no changes on already existing item', async () => {
+    const existingItem = (await user0item0.get()) as ResourceAttributesType
+
+    /* eslint-disable @typescript-eslint/no-unused-vars */
+    const {
+      id,
+      created_at,
+      updated_at,
+      created_at_iso,
+      updated_at_iso,
+      ...expectedItemAttrs
+    } = existingItem
+    /* eslint-enable @typescript-eslint/no-unused-vars */
+    expect(expectedItemAttrs).toEqual(user0item0attr0)
+
+    const createExistingItem = await user0item0.create({
+      attrs: {
+        newAttr: 'this is a new attribute',
+      },
+    })
+
+    expect(createExistingItem).toEqual(createExistingItem)
+    expect(createExistingItem.updated_at).toEqual(createExistingItem.updated_at)
+    expect(createExistingItem.updated_at_iso).toEqual(
+      createExistingItem.updated_at_iso,
+    )
   })
 })
