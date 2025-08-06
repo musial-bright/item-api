@@ -183,6 +183,16 @@ describe('create', () => {
 })
 
 describe('update', () => {
+  it('has not update on an not existing item', async () => {
+    const notExistingItemUpdateResult = await notExistingItem.update({
+      attrs: {
+        newAttr: 'new attribute',
+      },
+    })
+
+    expect(notExistingItemUpdateResult).toEqual(undefined)
+  })
+
   it('has updated item', async () => {
     const existingItem = (await user0item0.get()) as ResourceAttributesType
 
@@ -202,12 +212,24 @@ describe('update', () => {
       newAttr: 'a new attribute',
     }
 
-    const updatedItem = await user0item0.update({ attrs: newAttribute}) as ResourceAttributesType
+    const updatedItem = (await user0item0.update({
+      attrs: newAttribute,
+    })) as ResourceAttributesType
     expect(updatedItem.newAttr).toEqual(newAttribute.newAttr)
     expect(updatedItem.updated_at > existingItem.updated_at).toBeTruthy()
   })
 })
 
 describe('delete', () => {
-  // TODO: implement tests
+  it('has false on an not existing item', async () => {
+    const notExistingItemDeleteResult = await notExistingItem.delete()
+
+    expect(notExistingItemDeleteResult).toBeFalsy()
+  })
+
+  it('has true on an existing item', async () => {
+    const itemDeleteResult = await user0item0.delete()
+
+    expect(itemDeleteResult).toBeTruthy()
+  })
 })
