@@ -103,7 +103,7 @@ bin/delete-stack <stage>
 
 
 ## Endpoints
-All endpoint are documented in [SNet API swagger](../../docs/item-api/swagger-item-api.md).
+All endpoint are documented in [Item API swagger](docs/swagger-item-api.md).
 
 Here are a couple of practival __curl__ calls.
 

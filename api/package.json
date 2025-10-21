@@ -16,7 +16,8 @@
     "compile": "tsc",
     "test": "npm run compile && jest",
     "testlocal": "npm run compile && jest --config jest.config.local.ts",
-    "server": "npx tsx --env-file=.env src/server.ts"
+    "server": "npx tsx --env-file=.env src/server.ts",
+    "docs-generate": "openapi-to-md ../docs/swagger-item-api.json > ../docs/swagger-item-api.md"
   },
   "dependencies": {
     "@aws-sdk/client-dynamodb": "^3.716.0",
@@ -31,6 +32,7 @@
     "fastify": "^5.0.0",
     "fastify-plugin": "^5.0.1",
     "http-errors": "^2.0.0",
+    "openapi-to-md": "^1.0.27",
     "pino-pretty": "^13.0.0",
     "uuid": "^11.0.3"
   },

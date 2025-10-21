@@ -14,7 +14,7 @@ const SwaggerConfig: SwaggerOptions = {
     info: {
       title: 'Generic Item API',
       description: 'Generic Item API',
-      version: '1.2.0',
+      version: '1.3.0',
     },
     servers: [
       {
