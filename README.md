@@ -53,6 +53,7 @@ npm run server
 
 # run tests
 npm run test
+npm run testlocal # requires local dynamo db
 
 # run linter
 npm run lint
