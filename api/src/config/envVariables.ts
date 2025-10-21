@@ -8,4 +8,4 @@ export const envDynamoDbRegion = () => 'eu-central-1'
 
 export const envS3Region = () => 'eu-central-1'
 
-export const envS3FileBucket = () => 'bd-servicenet-files'
+export const envS3FileBucket = () => 's3bucket'

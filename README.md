@@ -144,10 +144,10 @@ curl -X POST http://localhost:3000/item-api/upload-file-url \
   }'
 
 # request upload-file-url (develop):
-curl -X POST https://bd-servicenet-develop.justrelate.io/item-api/upload-file-url \
+curl -X POST http://localhost:3000/item-api/upload-file-url \
   --header 'Content-Type: application/json' \
   --header 'Authorization: Bearer <TOKEN>' \
-  --header 'Referer: https://bd-servicenet-develop.justrelate.io' \
+  --header 'Referer: http://localhost:3000' \
   --data '{                      
   "path": "email-download",
   "filename": "landscape.png",
@@ -185,9 +185,9 @@ curl -X DELETE http://localhost:3000/item-api/item/test-item/<some item id> \
      -H 'Authorization: Bearer <TOKEN>' \
      -H 'Referer: http://localhost:3000' 
 
-curl -X POST https://bd-servicenet-develop.justrelate.io/item-api/item/test-item \
+curl -X POST http://localhost:3000/item-api/item/test-item \
      -H 'Content-Type: application/json' \
      -H 'Authorization: Bearer <TOKEN>' \
-     -H 'Referer: https://bd-servicenet-develop.justrelate.io' \
+     -H 'Referer: http://localhost:3000' \
      -d '{ "content": { "desc": "hello item", "items": [1]}, "info": "adam" }'
 ```

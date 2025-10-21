@@ -59,7 +59,7 @@ describe('generateSignedUploadUrl', () => {
 
       const expectedFilePathUrl = [
         'https://mocked-signed-url.com',
-        'bd-servicenet-files',
+        's3bucket',
         'test',
         'files',
         'email-download',
@@ -87,7 +87,7 @@ describe('generateSignedUploadUrl', () => {
 
       const expectedFilePathUrl = [
         'https://mocked-signed-url.com',
-        'bd-servicenet-files',
+        's3bucket',
         'test',
         'files',
         'email-download',

@@ -11,7 +11,7 @@ jest.mock('../../config/variableConfig', () => {
   }
 })
 
-// allow general snet api access
+// allow general api access
 jest.mock('../../service/authorizationService', () => {
   const original = jest.requireActual<
     typeof import('../../service/authorizationService')
@@ -68,7 +68,7 @@ describe('routes', () => {
 
         const expectedFilePathUrl = [
           'https://mocked-signed-url.com',
-          'bd-servicenet-files',
+          's3bucket',
           'test',
           'files',
           'email-download',
