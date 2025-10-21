@@ -16,7 +16,7 @@ const routes = async (fastify: FastifyInstance, _options: any) => {
 
       reply.send({
         status,
-        version: '1.0.0',
+        version: '1.3.0',
         date: new Date(),
       })
     },
