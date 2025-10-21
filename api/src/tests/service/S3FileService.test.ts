@@ -11,7 +11,7 @@ jest.mock('../../config/variableConfig', () => {
 
 const pretendSignedData = [
   'X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD',
-  'X-Amz-Credential=ASIA3FLD26NALOGDNOZ6%2F20251013%2Feu-central-1%2Fs3%2Faws4_request',
+  'X-Amz-Credential=BLABLABLAeu-central-1%2Fs3%2Faws4_request',
   'X-Amz-Date=20251013T054204Z',
 ].join('&')
 
