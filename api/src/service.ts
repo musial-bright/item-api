@@ -8,6 +8,7 @@ import infoRoute from './routes/infoRoute'
 import itemRoute from './routes/itemRoute'
 import myItemRoute from './routes/myItemRoute'
 import errorHandler from './handler/errorHandler'
+import uploadFileUrl from './routes/uploadFileUrl'
 
 const fastify: FastifyInstance = Fastify({
   logger: fastifyConfig.logger[fastifyConfig.currentEnv],
@@ -22,6 +23,7 @@ fastify.register(healthCheckRoute, { prefix: fastifyConfig.register.prefix })
 fastify.register(infoRoute, { prefix: fastifyConfig.register.prefix })
 fastify.register(itemRoute, { prefix: fastifyConfig.register.prefix })
 fastify.register(myItemRoute, { prefix: fastifyConfig.register.prefix })
+fastify.register(uploadFileUrl, { prefix: fastifyConfig.register.prefix })
 
 fastify.setErrorHandler(errorHandler)
 

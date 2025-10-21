@@ -15,8 +15,8 @@ jest.mock('../../config/envVariables', () => {
   }
 })
 
-const user0 = 'user-jest'
-const user1 = 'user-api-key'
+const user0 = 'user-jest-my-item'
+const user1 = 'user-api-key-my-item'
 
 const user0item0 = new MyItem(user0, 'test-my-item')
 const user0item1 = new MyItem(user0, 'test-other-my-item')

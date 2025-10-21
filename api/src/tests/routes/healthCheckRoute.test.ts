@@ -7,7 +7,7 @@ import { UnauthorizedError } from '../../utils/errors'
 
 jest.mock('../../config/variableConfig', () => {
   return {
-    currentEnvironemnt: jest.fn().mockReturnValue('test'),
+    currentEnvironment: jest.fn().mockReturnValue('test'),
   }
 })
 

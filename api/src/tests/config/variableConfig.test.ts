@@ -1,7 +1,7 @@
 import { beforeEach, expect, describe, it, jest } from '@jest/globals'
 
 import { envEnvironment } from '../../config/envVariables'
-import { currentEnvironemnt } from '../../config/variableConfig'
+import { currentEnvironment } from '../../config/variableConfig'
 
 jest.mock('../../config/envVariables')
 
@@ -13,12 +13,12 @@ const envEnvironmentMock = envEnvironment as jest.MockedFunction<
   typeof envEnvironment
 >
 
-describe('currentEnvironemnt', () => {
+describe('currentEnvironment', () => {
   describe('when process.env.ENVIRONMENT is empty', () => {
     it('has fallback "development" environment', () => {
       envEnvironmentMock.mockImplementation(() => '')
 
-      expect(currentEnvironemnt()).toEqual('development')
+      expect(currentEnvironment()).toEqual('development')
       expect(console.error).toBeCalled()
     })
   })
@@ -27,7 +27,7 @@ describe('currentEnvironemnt', () => {
     it('has fallback "development" environment', () => {
       envEnvironmentMock.mockImplementation(() => 'unsupported value')
 
-      expect(currentEnvironemnt()).toEqual('development')
+      expect(currentEnvironment()).toEqual('development')
       expect(console.error).toBeCalled()
     })
   })
@@ -36,7 +36,7 @@ describe('currentEnvironemnt', () => {
     it('has correct environment', () => {
       envEnvironmentMock.mockImplementation(() => 'test')
 
-      expect(currentEnvironemnt()).toEqual('test')
+      expect(currentEnvironment()).toEqual('test')
     })
   })
 })

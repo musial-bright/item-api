@@ -1,8 +1,8 @@
 import { FastifyConfig } from './typesConfig'
-import { currentEnvironemnt } from './variableConfig'
+import { currentEnvironment } from './variableConfig'
 
 const config: FastifyConfig = {
-  currentEnv: currentEnvironemnt(),
+  currentEnv: currentEnvironment(),
   logger: {
     // development: { // // AWS and SAM dows not like it
     //   transport: {

@@ -5,7 +5,7 @@ import service from '../../service'
 
 jest.mock('../../config/variableConfig', () => {
   return {
-    currentEnvironemnt: jest.fn().mockReturnValue('test'),
+    currentEnvironment: jest.fn().mockReturnValue('test'),
   }
 })
 

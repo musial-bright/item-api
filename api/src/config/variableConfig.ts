@@ -1,7 +1,7 @@
 import { envEnvironment } from './envVariables'
 import { EnvironemntType } from './typesConfig'
 
-export const currentEnvironemnt = (): EnvironemntType => {
+export const currentEnvironment = (): EnvironemntType => {
   switch (envEnvironment()) {
     case 'development':
       return 'development'

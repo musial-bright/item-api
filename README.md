@@ -8,12 +8,30 @@ There are two ways to build and deploy the Item API:
 - AWS SAM: use the SAM framework to deploy an manage the application -> folder `/aws/sam`
 
 
+References:
+- [SNet API swagger](../../docs/item-api/swagger-item-api.md)
+- [Fastify framework](https://fastify.dev/)
+- [AWS Lambda](https://docs.aws.amazon.com/lambda/latest/dg/welcome.html)
+- [AWS DynamoDB](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Introduction.html)
+
+
 ## Installation & Development
 The servierless fastify application resides int the `api` folder.
 ```
 cd api
 node install
 ```
+
+
+## Config
+For _local development_ copy the env file and fill it up. You will find all the values in 1Password.
+
+```
+# copy and fill out the .env config
+cp .env.example .env
+```
+
+For _AWS Lambda configuration_ you need so configure the environment variables in the AWS Lambda console *Configuration/Environment variables*. 
 
 ## Build fastify app for AWS Lambda only
 The build will create a `api/build` and `api/dist` folder.
@@ -83,33 +101,93 @@ bin/delete-stack <stage>
 ```
 
 
-## Open local app
+## Endpoints
+All endpoint are documented in [SNet API swagger](../../docs/item-api/swagger-item-api.md).
+
+Here are a couple of practival __curl__ calls.
+
+### Open local app
 Open in browser (http://localhost:3000/item-api/info)[http://localhost:3000/item-api/info] or with CURL:
 ```
 curl -X GET 'http://localhost:3000/item-api/info'
 curl -X <POST|GET|PUT|PATCH|DELETE> 'http://localhost:3000/item-api/item/:name/:id'
 ```
 
-Example:
+### Swagger
+First activate swagger on localhost by commenting in registerSwagger at `/src/service.ts` and activation of authroizer bypass at `src/hooks/authHook.ts`.
+Open in browser http://localhost:3000/item-api/docs 
+
+### Health checks
 ```
-curl -X POST http://localhost:3000/item-api/item/test-item \
-     -H 'Content-Type: application/json' \
-     -H 'Accept: application/json' \
-     -H 'Authorization: <auth token>' \
-     -d '{ "content": { "desc": "hello item", "items": [1]} }'
+curl -X GET http://localhost:3000/item-api/health-check
+```
 
-curl -X PATCH http://localhost:3000/item-api/item/test-item/<ID> \
-     -H 'Content-Type: application/json' \
-     -H 'Accept: application/json' \
-     -H 'Authorization: <auth token>' \
-     -d '{ "content": { "desc": "some object data", "items": [1, 2, 3, "four"]} }'
+### Info endpoint
+```
+curl -X GET http://localhost:3000/item-api/info \
+  --header 'Content-Type: application/json' \
+  --header 'Authorization: Bearer <TOKEN>'
+```
 
+
+### /upload-file-url
+```
+# request upload-file-url (local):
+curl -X POST http://localhost:3000/item-api/upload-file-url \
+  --header 'Content-Type: application/json' \
+  --header 'Authorization: Bearer <TOKEN>' \
+  --header 'Referer: http://localhost:3000' \
+  --data '{                      
+  "path": "/",
+  "filename": "landscape.png",
+  "content_type": "image/png"
+  }'
+
+# request upload-file-url (develop):
+curl -X POST https://bd-servicenet-develop.justrelate.io/item-api/upload-file-url \
+  --header 'Content-Type: application/json' \
+  --header 'Authorization: Bearer <TOKEN>' \
+  --header 'Referer: https://bd-servicenet-develop.justrelate.io' \
+  --data '{                      
+  "path": "email-download",
+  "filename": "landscape.png",
+  "content_type": "image/png"
+  }'
+
+# upload with upload-file-url
+curl -X PUT \ 
+  -T "./Landscape3.png" \
+  -H "Content-Type: image/png" \
+  ...<upload file url>...
+```
+
+
+### /item
+```
 curl -X GET http://localhost:3000/item-api/item/test-item \
      -H 'Content-Type: application/json' \
-     -H 'Accept: application/json' \
-     -H 'Authorization: <auth token>'
-     
+     -H 'Authorization: Bearer <TOKEN>' \
+     -H 'Referer: http://localhost:3000' 
+
+curl -X POST http://localhost:3000/item-api/item/test-item \
+     -H 'Content-Type: application/json' \
+     -H 'Authorization: Bearer <TOKEN>' \
+     -H 'Referer: http://localhost:3000' \
+     -d '{ "content": { "desc": "hello item", "items": [1]}, "info": "adam" }'
+
+curl -X <PUT|PATCH> http://localhost:3000/item-api/item/test-item/<some item id> \
+     -H 'Content-Type: application/json' \
+     -H 'Authorization: Bearer <TOKEN>' \
+     -H 'Referer: http://localhost:3000' \
+     -d '{ "content": { "desc": "hello item", "items": [1]}, "info": "adam" }'
+
+curl -X DELETE http://localhost:3000/item-api/item/test-item/<some item id> \
+     -H 'Authorization: Bearer <TOKEN>' \
+     -H 'Referer: http://localhost:3000' 
+
+curl -X POST https://bd-servicenet-develop.justrelate.io/item-api/item/test-item \
+     -H 'Content-Type: application/json' \
+     -H 'Authorization: Bearer <TOKEN>' \
+     -H 'Referer: https://bd-servicenet-develop.justrelate.io' \
+     -d '{ "content": { "desc": "hello item", "items": [1]}, "info": "adam" }'
 ```
-
-The API swagger documentation is available at http://localhost:3000/docs
-

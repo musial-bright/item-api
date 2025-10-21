@@ -1,7 +1,7 @@
-import { currentEnvironemnt } from '../config/variableConfig'
+import { currentEnvironment } from '../config/variableConfig'
 import fastifyConfig from '../config/fastifyConfig'
 
-const stage = currentEnvironemnt()
+const stage = currentEnvironment()
 
 /**
  * The tables consist of the following naming structure: `<prefix>-<stage>-<suffix>`
