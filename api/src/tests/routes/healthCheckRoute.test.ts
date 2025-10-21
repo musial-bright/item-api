@@ -30,7 +30,7 @@ describe('routes', () => {
       const body = JSON.parse(response.body)
 
       expect(response.statusCode).toBe(200)
-      expect(body.version).toBe('1.0.0')
+      expect(body.version).toBe('1.3.0')
       expect(body.date).not.toEqual('')
       expect(body.status.access).toEqual('OK')
     })
