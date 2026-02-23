@@ -13,9 +13,9 @@ const routes = async (fastify: FastifyInstance, _options: any) => {
       reply.send({
         info: {
           name: 'item-api',
-          version: '1.0.0',
+          version: '1.3.1',
           copyright: 'Adam Musial-Bright',
-          date: '2025-01-26 15:32',
+          date: '2026-02-32 17:35',
         },
       }),
   )

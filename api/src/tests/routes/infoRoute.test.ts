@@ -27,7 +27,7 @@ describe('routes', () => {
 
       expect(response.statusCode).toBe(200)
       expect(body.info.name).toBe('item-api')
-      expect(body.info.version).toBe('1.0.0')
+      expect(body.info.version).toBe('1.3.1')
       expect(body.info.copyright).toBe('Adam Musial-Bright')
     })
   })

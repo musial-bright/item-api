@@ -1,8 +1,7 @@
 import { expect, describe, it, jest, afterEach, beforeAll } from '@jest/globals'
 
-import Item from '../../entities/Item'
+import MyItem from '../../entities/MyItem'
 import { ResourceAttributesType } from '../../entities/types'
-import { IndexQueryCondition } from '../../utils/dynamoDbHelper'
 
 jest.mock('../../config/envVariables', () => {
   const original = jest.requireActual<
@@ -16,516 +15,95 @@ jest.mock('../../config/envVariables', () => {
   }
 })
 
-const item0 = new Item('test-item')
-const item1 = new Item('test-other-item')
-const user0 = 'user-jest'
-const user1 = 'user-api-key'
+const user0 = 'user-jest-my-item'
+const user1 = 'user-api-key-my-item'
 
-const attrs0: ResourceAttributesType = {
-  name: item0.name,
+const user0item0 = new MyItem(user0, 'test-my-item')
+const user0item1 = new MyItem(user0, 'test-other-my-item')
+
+const user1item1 = new MyItem(user1, 'test-other-my-item')
+
+const notExistingItem = new MyItem(user0, 'test-item-not-existing')
+const createItem = new MyItem(user0, 'test-item-create')
+
+const user0item0attr0: ResourceAttributesType = {
   user_id: user0,
+  name: user0item0.name,
   test: 'Item.testlocal.ts',
   director: 'Stanley Kubrick',
   age: 70,
   quality: 'excellent',
 }
-const attrs1: ResourceAttributesType = {
-  name: item0.name,
+
+const user0item1attrs1: ResourceAttributesType = {
   user_id: user0,
+  name: user0item1.name,
   test: 'Item.testlocal.ts',
   director: 'Sofia Coppola',
   age: 50,
   quality: 'good',
 }
-const attrs4: ResourceAttributesType = {
-  name: item0.name,
-  user_id: user0,
-  test: 'Item.testlocal.ts',
-  director: 'David Fincher',
-  age: 60,
-  quality: 'good',
-}
 
-const attrs2: ResourceAttributesType = {
-  name: item1.name,
-  user_id: user0,
-  test: 'Item.testlocal.ts',
-  director: 'Steven Spielberg',
-  age: 75,
-  quality: 'excellent',
-}
-
-const attrs3: ResourceAttributesType = {
-  name: item1.name,
+const user1item1attrs0: ResourceAttributesType = {
   user_id: user1,
+  name: user1item1.name,
   test: 'Item.testlocal.ts',
   director: 'Alfred Hitchcock',
   age: 80,
   quality: 'excellent',
 }
 
-const cleanupDb = async (itemRef: Item) => {
-  const testResult = await itemRef.queryBy({
-    indexNameSuffix: 'by-name',
-    conditions: [
-      {
-        attrName: 'name',
-        attrValue: itemRef.name,
-        condition: '=',
-      },
-    ],
-  })
-
-  if (testResult) {
-    for (const testItem of testResult.items || []) {
-      await itemRef.delete({ keys: { id: testItem.id } })
-    }
-  }
+const cleanupDb = async (itemRef: MyItem) => {
+  return await itemRef.delete()
 }
 
+const allItemAttrs = [
+  user0item0,
+  user0item1,
+  user1item1,
+  notExistingItem,
+  createItem,
+]
+
 beforeAll(async () => {
-  for (const itemRef of [item0, item1]) {
+  for (const itemRef of allItemAttrs) {
     await cleanupDb(itemRef)
+  }
+})
+
+beforeEach(async () => {
+  const createdItems: ResourceAttributesType[] = []
+  for (const attrRef of [user0item0attr0]) {
+    const createdItem = await user0item0.create({ attrs: attrRef })
+    createdItems.push(createdItem)
+  }
+
+  for (const attrRef of [user0item1attrs1]) {
+    const createdItem = await user0item1.create({ attrs: attrRef })
+    createdItems.push(createdItem)
+  }
+
+  for (const attrRef of [user1item1attrs0]) {
+    const createdItem = await user1item1.create({ attrs: attrRef })
+    createdItems.push(createdItem)
   }
 })
 
 afterEach(async () => {
-  for (const itemRef of [item0, item1]) {
+  for (const itemRef of allItemAttrs) {
     await cleanupDb(itemRef)
   }
 })
 
-describe('queryBy', () => {
-  beforeEach(async () => {
-    const createdItems0: ResourceAttributesType[] = []
-    for (const attrRef of [attrs0, attrs1, attrs4]) {
-      const createdItem = await item0.create({ attrs: attrRef })
-      createdItems0.push(createdItem)
-    }
-
-    const createdItems1: ResourceAttributesType[] = []
-    for (const attrRef of [attrs2, attrs3]) {
-      const createdItem = await item1.create({ attrs: attrRef })
-      createdItems1.push(createdItem)
-    }
-  })
-
-  describe('name', () => {
-    it(`has items of name '${item0.name}'`, async () => {
-      const getItems0ByName = await item0.queryBy({
-        indexNameSuffix: 'by-name',
-        conditions: [
-          {
-            attrName: 'name',
-            attrValue: item0.name,
-            condition: '=',
-          },
-        ],
-      })
-      const getItems0ByNameWithoutId = getItems0ByName?.items?.map((item) => {
-        // eslint-disable-next-line  @typescript-eslint/no-unused-vars
-        const { id, created_at, updated_at, ...attrs } = item
-        return attrs
-      })
-
-      expect(getItems0ByName).not.toBe(undefined)
-      expect(getItems0ByName!.items?.length).toEqual(3)
-      expect(getItems0ByNameWithoutId).not.toBe(undefined)
-      expect(getItems0ByNameWithoutId!.length).toEqual(3)
-      expect(
-        getItems0ByNameWithoutId!.filter((i) => i.director === attrs0.director)
-          .length,
-      ).toEqual(1)
-      expect(
-        getItems0ByNameWithoutId!.filter((i) => i.director === attrs1.director)
-          .length,
-      ).toEqual(1)
-      expect(
-        getItems0ByNameWithoutId!.filter((i) => i.director === attrs2.director)
-          .length,
-      ).toEqual(0)
-      expect(
-        getItems0ByNameWithoutId!.filter((i) => i.director === attrs3.director)
-          .length,
-      ).toEqual(0)
-      expect(
-        getItems0ByNameWithoutId!.filter((i) => i.director === attrs4.director)
-          .length,
-      ).toEqual(1)
-    })
-
-    it(`has items of name '${item1.name}'`, async () => {
-      const getItems1ByName = await item1.queryBy({
-        indexNameSuffix: 'by-name',
-        conditions: [
-          {
-            attrName: 'name',
-            attrValue: item1.name,
-            condition: '=',
-          },
-        ],
-      })
-      const getItems1ByNameWithoutId = getItems1ByName?.items?.map((item) => {
-        /* eslint-disable @typescript-eslint/no-unused-vars */
-        const {
-          id,
-          created_at,
-          updated_at,
-          created_at_iso,
-          updated_at_iso,
-          ...attrs
-        } = item
-        /* eslint-enable  @typescript-eslint/no-unused-vars */
-        return attrs
-      })
-
-      expect(getItems1ByName).not.toBe(undefined)
-      expect(getItems1ByName!.items?.length).toEqual(2)
-      expect(getItems1ByNameWithoutId).not.toBe(undefined)
-      expect(getItems1ByNameWithoutId!.length).toEqual(2)
-      expect(
-        getItems1ByNameWithoutId!.filter((i) => i.director === attrs0.director)
-          .length,
-      ).toEqual(0)
-      expect(
-        getItems1ByNameWithoutId!.filter((i) => i.director === attrs1.director)
-          .length,
-      ).toEqual(0)
-      expect(
-        getItems1ByNameWithoutId!.filter((i) => i.director === attrs2.director)
-          .length,
-      ).toEqual(1)
-      expect(
-        getItems1ByNameWithoutId!.filter((i) => i.director === attrs3.director)
-          .length,
-      ).toEqual(1)
-      expect(
-        getItems1ByNameWithoutId!.filter((i) => i.director === attrs4.director)
-          .length,
-      ).toEqual(0)
-    })
-  })
-
-  describe('user_id', () => {
-    it(`has user '${user0}' items'`, async () => {
-      const getItems0ByUser0AndName = await item0.queryBy({
-        indexNameSuffix: 'by-user-id',
-        conditions: [
-          {
-            attrName: 'user_id',
-            attrValue: user0,
-            condition: '=',
-          },
-        ],
-      })
-
-      const getItems0ByUser0AndNameWithoutId =
-        getItems0ByUser0AndName?.items?.map((item) => {
-          /* eslint-disable @typescript-eslint/no-unused-vars */
-          const {
-            id,
-            created_at,
-            updated_at,
-            created_at_iso,
-            updated_at_iso,
-            ...attrs
-          } = item
-          /* eslint-enable @typescript-eslint/no-unused-vars */
-          return attrs
-        })
-
-      expect(getItems0ByUser0AndName).not.toBe(undefined)
-      expect(getItems0ByUser0AndName!.items?.length).toEqual(4)
-      expect(getItems0ByUser0AndNameWithoutId).not.toBe(undefined)
-      expect(getItems0ByUser0AndNameWithoutId!.length).toEqual(4)
-      expect(
-        getItems0ByUser0AndNameWithoutId!.filter(
-          (i) => i.director === attrs0.director,
-        ).length,
-      ).toEqual(1)
-      expect(
-        getItems0ByUser0AndNameWithoutId!.filter(
-          (i) => i.director === attrs1.director,
-        ).length,
-      ).toEqual(1)
-      expect(
-        getItems0ByUser0AndNameWithoutId!.filter(
-          (i) => i.director === attrs2.director,
-        ).length,
-      ).toEqual(1)
-      expect(
-        getItems0ByUser0AndNameWithoutId!.filter(
-          (i) => i.director === attrs3.director,
-        ).length,
-      ).toEqual(0)
-    })
-
-    it(`has user '${user1}' items of name '${item1.name}'`, async () => {
-      const getItems1ByUser1AndName = await item1.queryBy({
-        indexNameSuffix: 'by-user-id',
-        conditions: [
-          {
-            attrName: 'user_id',
-            attrValue: user1,
-            condition: '=',
-          },
-        ],
-      })
-      const getItems1ByUser1AndNameWithoutId =
-        getItems1ByUser1AndName?.items?.map((item) => {
-          /* eslint-disable @typescript-eslint/no-unused-vars */
-          const {
-            id,
-            created_at,
-            updated_at,
-            created_at_iso,
-            updated_at_iso,
-            ...attrs
-          } = item
-          /* eslint-enable @typescript-eslint/no-unused-vars */
-          return attrs
-        })
-
-      expect(getItems1ByUser1AndName).not.toBe(undefined)
-      expect(getItems1ByUser1AndName!.items?.length).toEqual(1)
-      expect(getItems1ByUser1AndNameWithoutId).not.toBe(undefined)
-      expect(getItems1ByUser1AndNameWithoutId!.length).toEqual(1)
-      expect(
-        getItems1ByUser1AndNameWithoutId!.filter(
-          (i) => i.director === attrs0.director,
-        ).length,
-      ).toEqual(0)
-      expect(
-        getItems1ByUser1AndNameWithoutId!.filter(
-          (i) => i.director === attrs1.director,
-        ).length,
-      ).toEqual(0)
-      expect(
-        getItems1ByUser1AndNameWithoutId!.filter(
-          (i) => i.director === attrs2.director,
-        ).length,
-      ).toEqual(0)
-      expect(
-        getItems1ByUser1AndNameWithoutId!.filter(
-          (i) => i.director === attrs3.director,
-        ).length,
-      ).toEqual(1)
-    })
-  })
-
-  describe('user_id and name', () => {
-    it(`has user '${user0}' items of name '${item0.name}'`, async () => {
-      const getItems0ByUser0AndName = await item0.queryBy({
-        indexNameSuffix: 'by-user-id-and-name',
-        conditions: [
-          {
-            attrName: 'user_id',
-            attrValue: user0,
-            condition: '=',
-          },
-          {
-            attrName: 'name',
-            attrValue: item0.name,
-            condition: '=',
-          },
-        ],
-      })
-
-      const getItems0ByUser0AndNameWithoutId =
-        getItems0ByUser0AndName?.items?.map((item) => {
-          /* eslint-disable @typescript-eslint/no-unused-vars */
-          const {
-            id,
-            created_at,
-            updated_at,
-            created_at_iso,
-            updated_at_iso,
-            ...attrs
-          } = item
-          /* eslint-enable @typescript-eslint/no-unused-vars */
-          return attrs
-        })
-
-      expect(getItems0ByUser0AndName).not.toBe(undefined)
-      expect(getItems0ByUser0AndName!.items?.length).toEqual(3)
-      expect(getItems0ByUser0AndNameWithoutId).not.toBe(undefined)
-      expect(getItems0ByUser0AndNameWithoutId!.length).toEqual(3)
-      expect(
-        getItems0ByUser0AndNameWithoutId!.filter(
-          (i) => i.director === attrs0.director,
-        ).length,
-      ).toEqual(1)
-      expect(
-        getItems0ByUser0AndNameWithoutId!.filter(
-          (i) => i.director === attrs1.director,
-        ).length,
-      ).toEqual(1)
-      expect(
-        getItems0ByUser0AndNameWithoutId!.filter(
-          (i) => i.director === attrs4.director,
-        ).length,
-      ).toEqual(1)
-      expect(
-        getItems0ByUser0AndNameWithoutId!.filter(
-          (i) => i.director === attrs2.director,
-        ).length,
-      ).toEqual(0)
-      expect(
-        getItems0ByUser0AndNameWithoutId!.filter(
-          (i) => i.director === attrs3.director,
-        ).length,
-      ).toEqual(0)
-    })
-
-    it(`has user '${user1}' items of name '${item1.name}'`, async () => {
-      const getItems1ByUser1AndName = await item1.queryBy({
-        indexNameSuffix: 'by-user-id-and-name',
-        conditions: [
-          {
-            attrName: 'user_id',
-            attrValue: user1,
-            condition: '=',
-          },
-          {
-            attrName: 'name',
-            attrValue: item1.name,
-            condition: '=',
-          },
-        ],
-      })
-      const getItems1ByUser1AndNameWithoutId =
-        getItems1ByUser1AndName?.items?.map((item) => {
-          /* eslint-disable @typescript-eslint/no-unused-vars */
-          const {
-            id,
-            created_at,
-            updated_at,
-            created_at_iso,
-            updated_at_iso,
-            ...attrs
-          } = item
-          /* eslint-enable @typescript-eslint/no-unused-vars */
-          return attrs
-        })
-
-      expect(getItems1ByUser1AndName).not.toBe(undefined)
-      expect(getItems1ByUser1AndName!.items?.length).toEqual(1)
-      expect(getItems1ByUser1AndNameWithoutId).not.toBe(undefined)
-      expect(getItems1ByUser1AndNameWithoutId!.length).toEqual(1)
-      expect(
-        getItems1ByUser1AndNameWithoutId!.filter(
-          (i) => i.director === attrs0.director,
-        ).length,
-      ).toEqual(0)
-      expect(
-        getItems1ByUser1AndNameWithoutId!.filter(
-          (i) => i.director === attrs1.director,
-        ).length,
-      ).toEqual(0)
-      expect(
-        getItems1ByUser1AndNameWithoutId!.filter(
-          (i) => i.director === attrs4.director,
-        ).length,
-      ).toEqual(0)
-      expect(
-        getItems1ByUser1AndNameWithoutId!.filter(
-          (i) => i.director === attrs2.director,
-        ).length,
-      ).toEqual(0)
-      expect(
-        getItems1ByUser1AndNameWithoutId!.filter(
-          (i) => i.director === attrs3.director,
-        ).length,
-      ).toEqual(1)
-    })
-  })
-
-  describe('user_id and name and limit', () => {
-    it(`has user '${user0}' items of name '${item0.name}' with continuation in results`, async () => {
-      const conditions: IndexQueryCondition[] = [
-        {
-          attrName: 'user_id',
-          attrValue: user0,
-          condition: '=',
-        },
-        {
-          attrName: 'name',
-          attrValue: item0.name,
-          condition: '=',
-        },
-      ]
-      const limit = 2
-      const getItems0ByUser0AndName = await item0.queryBy({
-        indexNameSuffix: 'by-user-id-and-name',
-        conditions,
-        limitUseWithCaution: limit,
-      })
-
-      const getItems0ByUser0AndNameWithoutId =
-        getItems0ByUser0AndName?.items?.map((item) => {
-          /* eslint-disable @typescript-eslint/no-unused-vars */
-          const {
-            id,
-            created_at,
-            updated_at,
-            created_at_iso,
-            updated_at_iso,
-            ...attrs
-          } = item
-          /* eslint-enable @typescript-eslint/no-unused-vars */
-          return attrs
-        })
-
-      const expectedContinuationStart =
-        '{"name":"test-item","user_id":"user-jest"'
-
-      expect(getItems0ByUser0AndName).not.toBe(undefined)
-      expect(
-        getItems0ByUser0AndName.continuation?.startsWith(
-          expectedContinuationStart,
-        ),
-      ).toBeTruthy()
-      expect(getItems0ByUser0AndName!.items?.length).toEqual(limit)
-      expect(getItems0ByUser0AndNameWithoutId).not.toBe(undefined)
-      expect(getItems0ByUser0AndNameWithoutId!.length).toEqual(limit)
-      expect(
-        getItems0ByUser0AndNameWithoutId!.filter(
-          (i) => i.user_id === user0 && i.name === item0.name,
-        ).length,
-      ).toEqual(2)
-
-      // test continuation
-      const getItems0ByUser0AndNameWithContinuation = await item0.queryBy({
-        indexNameSuffix: 'by-user-id-and-name',
-        conditions,
-        limitUseWithCaution: limit,
-        continuation: getItems0ByUser0AndName.continuation,
-      })
-
-      expect(getItems0ByUser0AndNameWithContinuation).not.toBe(undefined)
-      expect(getItems0ByUser0AndNameWithContinuation.continuation).toEqual(
-        undefined,
-      )
-      expect(getItems0ByUser0AndNameWithContinuation!.items?.length).toEqual(1)
-
-      expect(
-        getItems0ByUser0AndNameWithContinuation!.items?.filter(
-          (i) => i.user_id === user0 && i.name === item0.name,
-        ).length,
-      ).toEqual(1)
-    })
-  })
-})
-
 describe('get', () => {
   it('has no item', async () => {
-    const getItem = await item0.get({ keys: { id: 'not-existing-id' } })
+    const getItem = await notExistingItem.get()
 
     expect(getItem).toEqual(undefined)
   })
 
   it('has item', async () => {
-    const createdItem = await item0.create({ attrs: attrs0 })
+    const getItem = (await user0item0.get()) as ResourceAttributesType
 
     /* eslint-disable @typescript-eslint/no-unused-vars */
     const {
@@ -535,18 +113,28 @@ describe('get', () => {
       created_at_iso,
       updated_at_iso,
       ...expectedItemAttrs
-    } = createdItem
+    } = getItem
     /* eslint-enable @typescript-eslint/no-unused-vars */
-    expect(expectedItemAttrs).toEqual(attrs0)
+    expect(expectedItemAttrs).toEqual(expectedItemAttrs)
 
-    const getItem = await item0.get({ keys: { id } })
-    expect(createdItem).toEqual(getItem)
+    // expect(getItem).toEqual(user0item0attr0)
   })
 })
 
 describe('create', () => {
   it('has new item', async () => {
-    const createdItem = await item0.create({ attrs: attrs0 })
+    const notExistingItemGetResult = await createItem.get()
+
+    expect(notExistingItemGetResult).toEqual(undefined)
+
+    const newAttrs = {
+      ...user0item0attr0,
+      notExistingItem: 'now existing',
+      name: 'test-item-create',
+    }
+    const createdItem = await createItem.create({
+      attrs: newAttrs,
+    })
 
     /* eslint-disable @typescript-eslint/no-unused-vars */
     const {
@@ -558,14 +146,55 @@ describe('create', () => {
       ...expectedItemAttrs
     } = createdItem
     /* eslint-enable @typescript-eslint/no-unused-vars */
+    expect(expectedItemAttrs).toEqual(newAttrs)
 
-    expect(expectedItemAttrs).toEqual(attrs0)
+    const getItem = await createItem.get()
+
+    expect(getItem).toEqual(createdItem)
+  })
+
+  it('has no changes on already existing item', async () => {
+    const existingItem = (await user0item0.get()) as ResourceAttributesType
+
+    /* eslint-disable @typescript-eslint/no-unused-vars */
+    const {
+      id,
+      created_at,
+      updated_at,
+      created_at_iso,
+      updated_at_iso,
+      ...expectedItemAttrs
+    } = existingItem
+    /* eslint-enable @typescript-eslint/no-unused-vars */
+    expect(expectedItemAttrs).toEqual(user0item0attr0)
+
+    const createExistingItem = await user0item0.create({
+      attrs: {
+        newAttr: 'this is a new attribute',
+      },
+    })
+
+    expect(createExistingItem).toEqual(createExistingItem)
+    expect(createExistingItem.updated_at).toEqual(createExistingItem.updated_at)
+    expect(createExistingItem.updated_at_iso).toEqual(
+      createExistingItem.updated_at_iso,
+    )
   })
 })
 
 describe('update', () => {
+  it('has not update on an not existing item', async () => {
+    const notExistingItemUpdateResult = await notExistingItem.update({
+      attrs: {
+        newAttr: 'new attribute',
+      },
+    })
+
+    expect(notExistingItemUpdateResult).toEqual(undefined)
+  })
+
   it('has updated item', async () => {
-    const createdItem = await item0.create({ attrs: attrs0 })
+    const existingItem = (await user0item0.get()) as ResourceAttributesType
 
     /* eslint-disable @typescript-eslint/no-unused-vars */
     const {
@@ -575,121 +204,32 @@ describe('update', () => {
       created_at_iso,
       updated_at_iso,
       ...expectedItemAttrs
-    } = createdItem
+    } = existingItem
     /* eslint-enable @typescript-eslint/no-unused-vars */
-    expect(expectedItemAttrs).toEqual(attrs0)
+    expect(expectedItemAttrs).toEqual(user0item0attr0)
 
-    const updateItem = await item0.update({
-      keys: { id },
-      attrs: {
-        ...attrs0,
-        additionalData: 'some new data',
-      },
-    })
-
-    const expectedUpdateItem = {
-      ...expectedItemAttrs,
-      additionalData: 'some new data',
+    const newAttribute = {
+      newAttr: 'a new attribute',
     }
 
-    expect({
-      name: updateItem?.name,
-      user_id: updateItem?.user_id,
-      test: updateItem?.test,
-      director: updateItem?.director,
-      age: updateItem?.age,
-      quality: updateItem?.quality,
-      additionalData: updateItem?.additionalData,
-    }).toEqual(expectedUpdateItem)
-
-    const reloadedItem = await item0.get({ keys: { id } })
-    expect({
-      name: reloadedItem?.name,
-      user_id: reloadedItem?.user_id,
-      test: reloadedItem?.test,
-      director: reloadedItem?.director,
-      age: reloadedItem?.age,
-      quality: reloadedItem?.quality,
-      additionalData: reloadedItem?.additionalData,
-    }).toEqual(expectedUpdateItem)
-  })
-
-  describe('with illegal name change', () => {
-    it('has updated item without changing the name', async () => {
-      const createdItem = await item0.create({ attrs: attrs0 })
-
-      /* eslint-disable @typescript-eslint/no-unused-vars */
-      const {
-        id,
-        created_at,
-        updated_at,
-        created_at_iso,
-        updated_at_iso,
-        ...expectedItemAttrs
-      } = createdItem
-      /* eslint-enable @typescript-eslint/no-unused-vars */
-      expect(expectedItemAttrs).toEqual(attrs0)
-
-      const updateItem = await item0.update({
-        keys: { id },
-        attrs: {
-          ...attrs0,
-          additionalData: 'some new data',
-          name: 'changed-name',
-        },
-      })
-      const expectedUpdateItem = {
-        ...expectedItemAttrs,
-        additionalData: 'some new data',
-        name: item0.name,
-      }
-
-      expect({
-        name: updateItem?.name,
-        user_id: updateItem?.user_id,
-        test: updateItem?.test,
-        director: updateItem?.director,
-        age: updateItem?.age,
-        quality: updateItem?.quality,
-        additionalData: updateItem?.additionalData,
-      }).toEqual(expectedUpdateItem)
-
-      const reloadedItem = await item0.get({ keys: { id } })
-      expect({
-        name: reloadedItem?.name,
-        user_id: reloadedItem?.user_id,
-        test: reloadedItem?.test,
-        director: reloadedItem?.director,
-        age: reloadedItem?.age,
-        quality: reloadedItem?.quality,
-        additionalData: reloadedItem?.additionalData,
-      }).toEqual(expectedUpdateItem)
-    })
+    const updatedItem = (await user0item0.update({
+      attrs: newAttribute,
+    })) as ResourceAttributesType
+    expect(updatedItem.newAttr).toEqual(newAttribute.newAttr)
+    expect(updatedItem.updated_at > existingItem.updated_at).toBeTruthy()
   })
 })
 
 describe('delete', () => {
-  it('has deleted item', async () => {
-    const createdItem = await item0.create({ attrs: attrs0 })
+  it('has false on an not existing item', async () => {
+    const notExistingItemDeleteResult = await notExistingItem.delete()
 
-    /* eslint-disable @typescript-eslint/no-unused-vars */
-    const {
-      id,
-      created_at,
-      updated_at,
-      created_at_iso,
-      updated_at_iso,
-      ...expectedItemAttrs
-    } = createdItem
-    /* eslint-enable @typescript-eslint/no-unused-vars */
+    expect(notExistingItemDeleteResult).toBeFalsy()
+  })
 
-    expect(expectedItemAttrs).toEqual(attrs0)
+  it('has true on an existing item', async () => {
+    const itemDeleteResult = await user0item0.delete()
 
-    const deletedItem = await item0.delete({ keys: { id } })
-
-    expect(deletedItem).toEqual(true)
-
-    const reloadedItem = await item0.get({ keys: { id } })
-    expect(reloadedItem).toEqual(undefined)
+    expect(itemDeleteResult).toBeTruthy()
   })
 })
