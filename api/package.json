@@ -1,6 +1,6 @@
 {
   "name": "item-api",
-  "version": "1.3.1",
+  "version": "1.4.0",
   "description": "Generic Item API",
   "main": "index.ts",
   "author": "Adam Musial-Bright",
@@ -13,7 +13,7 @@
     "lint": "eslint '**/*.ts' '**/*.js' --fix",
     "compile": "tsc",
     "test": "npm run compile && jest",
-    "testlocal": "npm run compile && jest --config jest.config.local.ts",
+    "testlocal": "npm run compile && NODE_OPTIONS=--experimental-vm-modules jest --config jest.config.local.ts",
     "server": "npx tsx --env-file=.env src/server.ts",
     "docs-generate": "openapi-to-md ../docs/swagger-item-api.json > ../docs/swagger-item-api.md"
   },

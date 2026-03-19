@@ -4,13 +4,24 @@
  */
 
 export default {
-  transform: {
-    '^.+\\.ts?$': 'ts-jest',
+  preset: 'ts-jest/presets/default-esm',
+  extensionsToTreatAsEsm: ['.ts'],
+  moduleNameMapper: {
+    '^(\\.{1,2}/.*)\\.js$': '$1',
   },
+  transform: {
+    '^.+\\.ts?$': [
+      'ts-jest',
+      {
+        useESM: true,
+      },
+    ],
+  },
+  testEnvironment: 'node',
+  setupFiles: ['dotenv/config'],
   clearMocks: true,
   collectCoverage: true,
   coverageDirectory: 'coverage',
   coverageProvider: 'v8',
   testMatch: ['**/src/tests/**/*.testlocal.ts'],
 }
-
