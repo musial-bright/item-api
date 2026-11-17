@@ -4,7 +4,7 @@ import { UserinfoType } from '../decorator/currentUser'
 export type AuthorizationResult = {
   success: boolean
   message: string
-  userinfo?: UserinfoType
+  userinfo: UserinfoType | undefined
 }
 
 abstract class AbstractAuthorizer {
@@ -14,7 +14,7 @@ abstract class AbstractAuthorizer {
     this.headers = headers
   }
 
-  abstract isAuthroized(): Promise<AuthorizationResult>
+  abstract isAuthorized(): Promise<AuthorizationResult>
 }
 
 export default AbstractAuthorizer

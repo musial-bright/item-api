@@ -20,3 +20,15 @@ export type FastifyConfig = {
     dynamoDbPrefix: string
   }
 }
+
+export type IamConfigType = {
+  teamIDs: {
+    // team id required for the /user-manager endpoint
+    userManager?: string
+    aiTeam?: string
+  }
+  userIds: {
+    // user id of the api user masking/hiding
+    apiKeyUser?: string
+  }
+}
