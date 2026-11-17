@@ -71,6 +71,7 @@ describe('jrClientWrapper()', () => {
   })
 
   it('retries with a forced new service token when the first call throws', async () => {
+    jest.spyOn(console, 'log').mockImplementation(() => {})
     createServiceTokenMock
       .mockResolvedValueOnce({
         access_token: 'token-0',
@@ -93,5 +94,6 @@ describe('jrClientWrapper()', () => {
     expect(result).toBe(secondResponse)
     expect(fnc).toHaveBeenCalledTimes(2)
     expect(createServiceTokenMock).toHaveBeenNthCalledWith(2, true)
+    expect(console.log).toBeCalled()
   })
 })

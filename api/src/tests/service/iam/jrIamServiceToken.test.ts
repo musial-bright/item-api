@@ -88,6 +88,7 @@ describe('createServiceToken()', () => {
   })
 
   it('throws and does not store a token when the token endpoint responds with an error', async () => {
+    jest.spyOn(console, 'error').mockImplementation(() => {})
     loadCachedTokenMock.mockResolvedValue(undefined)
     const errorBody = { error: 'invalid_client' }
     jest.spyOn(global, 'fetch').mockResolvedValue({
@@ -100,5 +101,6 @@ describe('createServiceToken()', () => {
       status: 401,
     })
     expect(saveTokenMock).not.toHaveBeenCalled()
+    expect(console.error).toBeCalled()
   })
 })
