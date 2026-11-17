@@ -17,5 +17,6 @@ export type FastifyConfig = {
   }
   register: {
     prefix: string
+    dynamoDbPrefix: string
   }
 }

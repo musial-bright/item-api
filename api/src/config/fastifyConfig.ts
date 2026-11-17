@@ -1,8 +1,15 @@
 import { FastifyConfig } from './typesConfig'
 import { currentEnvironment } from './variableConfig'
 
+const Defaults = {
+  urlSeparator: '/',
+  dbSeparator: '-',
+}
+
+const stage = currentEnvironment()
+
 const config: FastifyConfig = {
-  currentEnv: currentEnvironment(),
+  currentEnv: stage,
   logger: {
     // development: { // // AWS and SAM dows not like it
     //   transport: {
@@ -19,7 +26,8 @@ const config: FastifyConfig = {
     test: false,
   },
   register: {
-    prefix: 'item-api',
+    prefix: ['item-api', stage].join(Defaults.urlSeparator),
+    dynamoDbPrefix: ['item-api', stage].join(Defaults.dbSeparator),
   },
 }
 
