@@ -21,6 +21,31 @@ const schema: RouteShorthandOptions = {
               date: {
                 type: 'string',
               },
+              changelog: {
+                type: 'array',
+                items: {
+                  type: 'object',
+                  properties: {
+                    version: {
+                      type: 'string',
+                    },
+                    features: {
+                      type: 'array',
+                      items: {
+                        type: 'object',
+                        properties: {
+                          title: {
+                            type: 'string',
+                          },
+                          description: {
+                            type: 'string',
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
             },
           },
         },

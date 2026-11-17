@@ -1,7 +1,7 @@
 import { FastifyRequest } from 'fastify'
 import { ResourceType } from '../entities/types'
 
-export const filterItems = (request: FastifyRequest, items: ResourceType[]) => {
+export const orderItems = (request: FastifyRequest, items: ResourceType[]) => {
   const query = request.query as Record<string, string | string[]>
   const order = query._order
   if (!order) {
@@ -14,10 +14,17 @@ export const filterItems = (request: FastifyRequest, items: ResourceType[]) => {
   const sortDirection = sortOrderParts[1] === 'desc' ? 'desc' : 'asc'
 
   const sortedItems = items.sort((a, b) => {
-    if (a[sortKey] < b[sortKey]) {
+    let aValue = a[sortKey]
+    let bValue = b[sortKey]
+    if (typeof aValue === 'string' && typeof bValue === 'string') {
+      aValue = aValue.toLowerCase()
+      bValue = bValue.toLowerCase()
+    }
+
+    if (aValue < bValue) {
       return sortDirection === 'asc' ? -1 : 1
     }
-    if (a[sortKey] > b[sortKey]) {
+    if (aValue > bValue) {
       return sortDirection === 'asc' ? 1 : -1
     }
     return 0

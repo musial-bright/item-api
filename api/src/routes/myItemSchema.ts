@@ -33,6 +33,12 @@ const schemaItem = {
     updated_at: {
       type: 'number',
     },
+    created_at_iso: {
+      type: 'string',
+    },
+    updated_at_iso: {
+      type: 'string',
+    },
   },
   required: ['name'],
   additionalProperties: true,

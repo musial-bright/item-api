@@ -42,7 +42,7 @@ const routes = async (fastify: FastifyInstance, _options: any) => {
       }
 
       // eslint-disable-next-line  @typescript-eslint/no-unused-vars
-      const { id, ...sanitizedResult } = result
+      const { id, user_id, ...sanitizedResult } = result
 
       return reply.send(sanitizedResult)
     },
@@ -73,7 +73,7 @@ const routes = async (fastify: FastifyInstance, _options: any) => {
       reply.statusCode = 201
 
       // eslint-disable-next-line  @typescript-eslint/no-unused-vars
-      const { id, ...sanitizedResult } = result
+      const { id, user_id, ...sanitizedResult } = result
 
       return reply.send(sanitizedResult)
     },
@@ -114,7 +114,7 @@ const routes = async (fastify: FastifyInstance, _options: any) => {
       }
 
       // eslint-disable-next-line  @typescript-eslint/no-unused-vars
-      const { id, ...sanitizedResult } = result
+      const { id, user_id, ...sanitizedResult } = result
 
       return reply.send(sanitizedResult)
     },

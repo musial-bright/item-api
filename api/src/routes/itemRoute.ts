@@ -17,7 +17,7 @@ import {
 import Item from '../entities/Item'
 import { getCurrentUser } from '../decorator/currentUser'
 import { getFilterExpressions } from '../utils/requestFilter'
-import { filterItems } from '../utils/requestOrder'
+import { orderItems } from '../utils/requestOrder'
 import { getRequestContinuation } from '../utils/requestContinuation'
 
 const indexPath = '/item/:name'
@@ -65,7 +65,7 @@ const routes = async (fastify: FastifyInstance, _options: any) => {
       })
 
       const sanisanitizedResults = queryResult.items
-        ? filterItems(request, queryResult.items).map((result) => {
+        ? orderItems(request, queryResult.items).map((result) => {
             // eslint-disable-next-line @typescript-eslint/no-unused-vars
             const { user_id, ...sanisanitizedResult } = result
             return sanisanitizedResult

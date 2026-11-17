@@ -2,6 +2,7 @@ import { expect, describe, it, jest } from '@jest/globals'
 
 import fastifyConfig from '../../config/fastifyConfig'
 import service from '../../service'
+import { changelog, getLatestVersion } from '../../changelog'
 
 jest.mock('../../config/variableConfig', () => {
   return {
@@ -27,8 +28,9 @@ describe('routes', () => {
 
       expect(response.statusCode).toBe(200)
       expect(body.info.name).toBe('item-api')
-      expect(body.info.version).toBe('1.3.1')
+      expect(body.info.version).toBe(getLatestVersion())
       expect(body.info.copyright).toBe('Adam Musial-Bright')
+      expect(body.info.changelog).toEqual(changelog)
     })
   })
 })
