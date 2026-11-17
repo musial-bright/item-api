@@ -7,6 +7,7 @@ const run = async () => {
   try {
     await deleteTables()
   } catch (e) {
+    console.error(e)
     if (e instanceof ResourceNotFoundException) {
       await createTables()
     }

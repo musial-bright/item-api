@@ -23,4 +23,5 @@ export const deleteItemTable = async (name: string) => {
 
 export const deleteTables = async () => {
   await deleteItemTable(tableNames.item)
+  await deleteItemTable(tableNames.service)
 }

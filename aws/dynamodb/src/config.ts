@@ -8,4 +8,5 @@ const tablePrefix = `item-api-${stage}`
 
 export const tableNames = {
   item: `${tablePrefix}-item`,
+  service: `${tablePrefix}-service`,
 }
