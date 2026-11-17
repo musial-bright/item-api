@@ -108,24 +108,24 @@ All endpoint are documented in [Item API swagger](docs/swagger-item-api.md).
 Here are a couple of practival __curl__ calls.
 
 ### Open local app
-Open in browser (http://localhost:3000/item-api/info)[http://localhost:3000/item-api/info] or with CURL:
+Open in browser (http://localhost:3000/item-api/development/info)[http://localhost:3000/item-api/development/info] or with CURL:
 ```
-curl -X GET 'http://localhost:3000/item-api/info'
-curl -X <POST|GET|PUT|PATCH|DELETE> 'http://localhost:3000/item-api/item/:name/:id'
+curl -X GET 'http://localhost:3000/item-api/development/info'
+curl -X <POST|GET|PUT|PATCH|DELETE> 'http://localhost:3000/item-api/development/item/:name/:id'
 ```
 
 ### Swagger
 First activate swagger on localhost by commenting in registerSwagger at `/src/service.ts` and activation of authroizer bypass at `src/hooks/authHook.ts`.
-Open in browser http://localhost:3000/item-api/docs 
+Open in browser http://localhost:3000/item-api/development/docs 
 
 ### Health checks
 ```
-curl -X GET http://localhost:3000/item-api/health-check
+curl -X GET http://localhost:3000/item-api/development/health-check
 ```
 
 ### Info endpoint
 ```
-curl -X GET http://localhost:3000/item-api/info \
+curl -X GET http://localhost:3000/item-api/development/info \
   --header 'Content-Type: application/json' \
   --header 'Authorization: Bearer <TOKEN>'
 ```
@@ -134,7 +134,7 @@ curl -X GET http://localhost:3000/item-api/info \
 ### /upload-file-url
 ```
 # request upload-file-url (local):
-curl -X POST http://localhost:3000/item-api/upload-file-url \
+curl -X POST http://localhost:3000/item-api/development/upload-file-url \
   --header 'Content-Type: application/json' \
   --header 'Authorization: Bearer <TOKEN>' \
   --header 'Referer: http://localhost:3000' \
@@ -145,7 +145,7 @@ curl -X POST http://localhost:3000/item-api/upload-file-url \
   }'
 
 # request upload-file-url (develop):
-curl -X POST http://localhost:3000/item-api/upload-file-url \
+curl -X POST http://localhost:3000/item-api/development/upload-file-url \
   --header 'Content-Type: application/json' \
   --header 'Authorization: Bearer <TOKEN>' \
   --header 'Referer: http://localhost:3000' \
@@ -165,28 +165,28 @@ curl -X PUT \
 
 ### /item
 ```
-curl -X GET http://localhost:3000/item-api/item/test-item \
+curl -X GET http://localhost:3000/item-api/development/item/test-item \
      -H 'Content-Type: application/json' \
      -H 'Authorization: Bearer <TOKEN>' \
      -H 'Referer: http://localhost:3000' 
 
-curl -X POST http://localhost:3000/item-api/item/test-item \
+curl -X POST http://localhost:3000/item-api/development/item/test-item \
      -H 'Content-Type: application/json' \
      -H 'Authorization: Bearer <TOKEN>' \
      -H 'Referer: http://localhost:3000' \
      -d '{ "content": { "desc": "hello item", "items": [1]}, "info": "adam" }'
 
-curl -X <PUT|PATCH> http://localhost:3000/item-api/item/test-item/<some item id> \
+curl -X <PUT|PATCH> http://localhost:3000/item-api/development/item/test-item/<some item id> \
      -H 'Content-Type: application/json' \
      -H 'Authorization: Bearer <TOKEN>' \
      -H 'Referer: http://localhost:3000' \
      -d '{ "content": { "desc": "hello item", "items": [1]}, "info": "adam" }'
 
-curl -X DELETE http://localhost:3000/item-api/item/test-item/<some item id> \
+curl -X DELETE http://localhost:3000/item-api/development/item/test-item/<some item id> \
      -H 'Authorization: Bearer <TOKEN>' \
      -H 'Referer: http://localhost:3000' 
 
-curl -X POST http://localhost:3000/item-api/item/test-item \
+curl -X POST http://localhost:3000/item-api/development/item/test-item \
      -H 'Content-Type: application/json' \
      -H 'Authorization: Bearer <TOKEN>' \
      -H 'Referer: http://localhost:3000' \
