@@ -5,6 +5,11 @@ import fastifyConfig from '../config/fastifyConfig'
 import { authorizationGuard } from '../service/authorizationService'
 
 const authHook = async (request: FastifyRequest, _reply: FastifyReply) => {
+  // if (request.url.startsWith(`/${fastifyConfig.register.prefix}/docs`)) {
+  //   // swagger
+  //   return
+  // }
+
   if (request.url === `/${fastifyConfig.register.prefix}/health-check`) {
     return
   }

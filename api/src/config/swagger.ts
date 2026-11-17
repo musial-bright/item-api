@@ -5,8 +5,9 @@ import swaggerUI from '@fastify/swagger-ui'
 import { FastifyInstance } from 'fastify'
 
 import fastifyConfig from './fastifyConfig'
+import { getLatestVersion } from '../changelog'
 
-const indexPath = '/docs'
+const indexPath = `/${fastifyConfig.register.prefix}/docs`
 
 const SwaggerConfig: SwaggerOptions = {
   openapi: {
@@ -14,7 +15,7 @@ const SwaggerConfig: SwaggerOptions = {
     info: {
       title: 'Generic Item API',
       description: 'Generic Item API',
-      version: '1.3.0',
+      version: getLatestVersion(),
     },
     servers: [
       {
@@ -52,11 +53,7 @@ const SwaggerUIConfig: FastifySwaggerUiOptions = {
 
 const registerSwagger = (fastify: FastifyInstance) => {
   fastify.register(swagger, SwaggerConfig)
-  // eslint-disable-next-line  @typescript-eslint/no-explicit-any
-  const swaggerUIRoute = async (fastify: FastifyInstance, _options: any) => {
-    fastify.register(swaggerUI, SwaggerUIConfig)
-  }
-  fastify.register(swaggerUIRoute, { prefix: fastifyConfig.register.prefix })
+  fastify.register(swaggerUI, SwaggerUIConfig)
 }
 
 export { SwaggerConfig, SwaggerUIConfig, registerSwagger }

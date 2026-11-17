@@ -9,6 +9,7 @@ import itemRoute from './routes/itemRoute'
 import myItemRoute from './routes/myItemRoute'
 import errorHandler from './handler/errorHandler'
 import uploadFileUrl from './routes/uploadFileUrl'
+// import { registerSwagger } from './config/swagger'
 
 const fastify: FastifyInstance = Fastify({
   logger: fastifyConfig.logger[fastifyConfig.currentEnv],

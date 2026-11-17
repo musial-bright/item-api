@@ -9,17 +9,17 @@ There are two ways to build and deploy the Item API:
 
 
 References:
-- [SNet API swagger](../../docs/item-api/swagger-item-api.md)
+- [Item API swagger](docs/swagger-item-api.md)
 - [Fastify framework](https://fastify.dev/)
 - [AWS Lambda](https://docs.aws.amazon.com/lambda/latest/dg/welcome.html)
 - [AWS DynamoDB](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Introduction.html)
 
 
 ## Installation & Development
-The servierless fastify application resides int the `api` folder.
+The serverless fastify application resides in the `api` folder.
 ```
 cd api
-node install
+npm install
 ```
 
 
@@ -32,6 +32,13 @@ cp .env.example .env
 ```
 
 For _AWS Lambda configuration_ you need so configure the environment variables in the AWS Lambda console *Configuration/Environment variables*. 
+
+### Authorization
+Requests are authorized by two authorizers, tried in order:
+1. `ApiKeyAuthorizer` (`src/authorizer/ApiKeyAuthorizer.ts`) - **development only**. Requires the `Authorization` header to exactly equal `API_KEY_AUTH` (no `Bearer` prefix).
+2. `JrAuthorizer` (`src/authorizer/JrAuthorizer.ts`) - validates a `Bearer <token>` against JustRelate IAM (`userinfo` endpoint), configured via `JR_ACCOUNT_ID`, `JR_INSTANCE_ID`, `JR_TOKEN_KEY`, `JR_TOKEN_SECRET` and `JR_IAM_CONFIG` in `.env`.
+
+See `src/service/authorizationService.ts` for the chaining logic.
 
 ## Build fastify app for AWS Lambda only
 The build will create a `api/build` and `api/dist` folder.
@@ -115,8 +122,13 @@ curl -X <POST|GET|PUT|PATCH|DELETE> 'http://localhost:3000/item-api/development/
 ```
 
 ### Swagger
-First activate swagger on localhost by commenting in registerSwagger at `/src/service.ts` and activation of authroizer bypass at `src/hooks/authHook.ts`.
-Open in browser http://localhost:3000/item-api/development/docs 
+First activate swagger on localhost by commenting in `registerSwagger(fastify)` at `/src/service.ts`.
+The `/docs` route is not exempt from authorization, so open it with a valid `Authorization` header (e.g. matching `API_KEY_AUTH`) rather than directly in the browser - a REST client or browser extension that can set headers works well here.
+
+Open in browser http://localhost:3000/bd-snet-api/develop/docs
+
+Open directly JSON http://localhost:3000/bd-snet-api/develop/docs/json
+
 
 ### Health checks
 ```
@@ -191,4 +203,30 @@ curl -X POST http://localhost:3000/item-api/development/item/test-item \
      -H 'Authorization: Bearer <TOKEN>' \
      -H 'Referer: http://localhost:3000' \
      -d '{ "content": { "desc": "hello item", "items": [1]}, "info": "adam" }'
+```
+
+
+### /my-item
+Single-item-per-name storage scoped to the current user (no `:id` in the path).
+```
+curl -X GET http://localhost:3000/item-api/development/my-item/test-item \
+     -H 'Content-Type: application/json' \
+     -H 'Authorization: Bearer <TOKEN>' \
+     -H 'Referer: http://localhost:3000' 
+
+curl -X POST http://localhost:3000/item-api/development/my-item/test-item \
+     -H 'Content-Type: application/json' \
+     -H 'Authorization: Bearer <TOKEN>' \
+     -H 'Referer: http://localhost:3000' \
+     -d '{ "content": { "desc": "hello item", "items": [1]}, "info": "adam" }'
+
+curl -X PATCH http://localhost:3000/item-api/development/my-item/test-item \
+     -H 'Content-Type: application/json' \
+     -H 'Authorization: Bearer <TOKEN>' \
+     -H 'Referer: http://localhost:3000' \
+     -d '{ "content": { "desc": "hello item", "items": [1]}, "info": "adam" }'
+
+curl -X DELETE http://localhost:3000/item-api/development/my-item/test-item \
+     -H 'Authorization: Bearer <TOKEN>' \
+     -H 'Referer: http://localhost:3000' 
 ```

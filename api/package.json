@@ -15,7 +15,7 @@
     "test": "npm run compile && jest",
     "testlocal": "npm run compile && NODE_OPTIONS=--experimental-vm-modules jest --config jest.config.local.ts",
     "server": "npx tsx --env-file=.env src/server.ts",
-    "docs-generate": "openapi-to-md ../docs/swagger-item-api.json > ../docs/swagger-item-api.md"
+    "docs-generate": "curl -X GET http://localhost:3000/item-api/development/docs/json > ../docs/swagger-item-api.json && openapi-to-md ../docs/swagger-item-api.json > ../docs/swagger-item-api.md"
   },
   "dependencies": {
     "@aws-sdk/client-dynamodb": "^3.716.0",
