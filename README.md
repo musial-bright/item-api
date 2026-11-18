@@ -123,9 +123,9 @@ curl -X <POST|GET|PUT|PATCH|DELETE> 'http://localhost:3000/item-api/development/
 First activate swagger on localhost by commenting in `registerSwagger(fastify)` at `/src/service.ts`.
 The `/docs` route is not exempt from authorization, so open it with a valid `Authorization` header (e.g. matching `API_KEY_AUTH`) rather than directly in the browser - a REST client or browser extension that can set headers works well here.
 
-Open in browser http://localhost:3000/bd-snet-api/develop/docs
+Open in browser http://localhost:3000/item-api/development/docs
 
-Open directly JSON http://localhost:3000/bd-snet-api/develop/docs/json
+Open directly JSON http://localhost:3000/item-api/development/docs/json
 
 
 ### Health checks
