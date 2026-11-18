@@ -24,8 +24,6 @@ npm install
 
 
 ## Config
-For _local development_ copy the env file and fill it up. You will find all the values in 1Password.
-
 ```
 # copy and fill out the .env config
 cp .env.example .env
@@ -36,7 +34,7 @@ For _AWS Lambda configuration_ you need so configure the environment variables i
 ### Authorization
 Requests are authorized by two authorizers, tried in order:
 1. `ApiKeyAuthorizer` (`src/authorizer/ApiKeyAuthorizer.ts`) - **development only**. Requires the `Authorization` header to exactly equal `API_KEY_AUTH` (no `Bearer` prefix).
-2. `JrAuthorizer` (`src/authorizer/JrAuthorizer.ts`) - validates a `Bearer <token>` against JustRelate IAM (`userinfo` endpoint), configured via `JR_ACCOUNT_ID`, `JR_INSTANCE_ID`, `JR_TOKEN_KEY`, `JR_TOKEN_SECRET` and `JR_IAM_CONFIG` in `.env`.
+2. `JrAuthorizer` (`src/authorizer/JrAuthorizer.ts`) - validates a `Bearer <token>` against JR IAM (`userinfo` endpoint), configured via `JR_ACCOUNT_ID`, `JR_INSTANCE_ID`, `JR_TOKEN_KEY`, `JR_TOKEN_SECRET` and `JR_IAM_CONFIG` in `.env`.
 
 See `src/service/authorizationService.ts` for the chaining logic.
 
