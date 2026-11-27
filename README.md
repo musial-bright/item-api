@@ -34,7 +34,7 @@ For _AWS Lambda configuration_ you need so configure the environment variables i
 ### Authorization
 Requests are authorized by two authorizers, tried in order:
 1. `ApiKeyAuthorizer` (`src/authorizer/ApiKeyAuthorizer.ts`) - **development only**. Requires the `Authorization` header to exactly equal `API_KEY_AUTH` (no `Bearer` prefix).
-2. `JrAuthorizer` (`src/authorizer/JrAuthorizer.ts`) - validates a `Bearer <token>` against JR IAM (`userinfo` endpoint), configured via `JR_ACCOUNT_ID`, `JR_INSTANCE_ID`, `JR_TOKEN_KEY`, `JR_TOKEN_SECRET` and `JR_IAM_CONFIG` in `.env`.
+2. `JrAuthorizer` (`src/authorizer/JrAuthorizer.ts`) - validates a `Bearer <token>` against JR IAM (`userinfo` endpoint), configured via `JR_ACCOUNT_ID`, `JR_INSTANCE_ID`, `JR_TOKEN_KEY` and `JR_TOKEN_SECRET` in `.env`.
 
 See `src/service/authorizationService.ts` for the chaining logic.
 

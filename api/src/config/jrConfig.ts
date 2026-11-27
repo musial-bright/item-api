@@ -1,11 +1,7 @@
-import { envIamConfig } from './envVariables'
-
 const audience: Record<string, string> = {
   fallback: 'https://api.justrelate.com',
   'http://localhost:3000': 'https://api.justrelate.com',
 }
-
-const iamConfig = envIamConfig()
 
 const config = {
   jr: {
@@ -18,7 +14,6 @@ const config = {
     tokenUrl: 'https://api.justrelate.com/iam/token',
     tokenKey: process.env.JR_TOKEN_KEY as string,
     tokenSecret: process.env.JR_TOKEN_SECRET as string,
-    ...iamConfig,
   },
 }
 
