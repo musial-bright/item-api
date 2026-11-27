@@ -3,6 +3,7 @@ import Fastify, { FastifyInstance } from 'fastify'
 import fastifyConfig from './config/fastifyConfig'
 
 import authPlugin from './plugins/authPlugin'
+import configRoute from './routes/configRoute'
 import healthCheckRoute from './routes/healthCheckRoute'
 import infoRoute from './routes/infoRoute'
 import itemRoute from './routes/itemRoute'
@@ -20,6 +21,7 @@ const fastify: FastifyInstance = Fastify({
 
 fastify.register(authPlugin)
 
+fastify.register(configRoute, { prefix: fastifyConfig.register.prefix })
 fastify.register(healthCheckRoute, { prefix: fastifyConfig.register.prefix })
 fastify.register(infoRoute, { prefix: fastifyConfig.register.prefix })
 fastify.register(itemRoute, { prefix: fastifyConfig.register.prefix })

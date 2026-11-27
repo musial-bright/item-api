@@ -20,9 +20,11 @@ export type QueryByType = {
   filterExpressions?: FilterExpression[]
   continuation?: string
   limitUseWithCaution?: number
+  select?: 'COUNT'
 }
 
 export type QueryByResultType = {
   items: ResourceType[] | undefined
   continuation?: string
+  count?: number
 }

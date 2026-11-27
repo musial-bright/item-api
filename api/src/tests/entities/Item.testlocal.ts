@@ -1,4 +1,4 @@
-import { expect, describe, it, jest, afterEach, beforeAll } from '@jest/globals'
+import { expect, describe, it, jest, afterEach, beforeEach, beforeAll } from '@jest/globals'
 
 import Item from '../../entities/Item'
 import { ResourceAttributesType } from '../../entities/types'

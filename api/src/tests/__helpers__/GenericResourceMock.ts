@@ -121,6 +121,7 @@ class GenericResourceMock {
 
     return {
       items: results,
+      count: results.length,
     }
   }
 
