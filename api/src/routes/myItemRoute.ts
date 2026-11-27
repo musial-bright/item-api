@@ -14,6 +14,7 @@ import {
 } from '../utils/errors'
 import MyItem from '../entities/MyItem'
 import { getCurrentUser } from '../decorator/currentUser'
+import { assertUserCanCreateItem } from '../service/itemLimitService'
 
 const path = '/my-item/:name'
 
@@ -62,6 +63,14 @@ const routes = async (fastify: FastifyInstance, _options: any) => {
       const body = request.body as Record<string, any>
 
       const item = new MyItem(currentUser.identifier, name)
+
+      // a POST to an existing name is a no-op upsert (see GenericResource.create),
+      // so it doesn't consume a new slot and must not be blocked by the limit
+      const existingItem = await item.get()
+      if (!existingItem) {
+        await assertUserCanCreateItem({ userId: currentUser.identifier })
+      }
+
       const result = await item.create({
         attrs: {
           ...body,

@@ -15,14 +15,19 @@ import { IndexQueryCondition } from '../../utils/dynamoDbHelper'
 import { currentUserFixture } from '../__fixtures__/currentUserFixture'
 import GenericResourceMock from '../__helpers__/GenericResourceMock'
 import GenericResource from '../../entities/GenericResource'
-import { errorMessages } from '../../utils/errors'
+import { errorMessages, UnprocessableContentError } from '../../utils/errors'
 import { IdPartSeparator } from '../../entities/MyItem'
+import { assertUserCanCreateItem } from '../../service/itemLimitService'
 
 jest.mock('../../config/variableConfig', () => {
   return {
     currentEnvironment: jest.fn().mockReturnValue('test'),
   }
 })
+
+jest.mock('../../service/itemLimitService', () => ({
+  assertUserCanCreateItem: jest.fn(),
+}))
 
 jest.mock('../../service/authorizationService', () => {
   const original = jest.requireActual<
@@ -122,6 +127,8 @@ const items: ResourceType[] = [
 ]
 
 beforeEach(() => {
+  jest.mocked(assertUserCanCreateItem).mockResolvedValue(undefined)
+
   const resourceMock: GenericResourceMock = new GenericResourceMock({
     tableNameSuffix: itemName0,
     indexNameSuffix: 'by-user-id-and-name',
@@ -278,6 +285,67 @@ describe('routes', () => {
       expect(bodyGet.created_at).not.toBe(undefined)
       expect(bodyGet.updated_at).not.toBe(undefined)
       expect(bodyGet.created_at).toEqual(bodyGet.updated_at)
+    })
+  })
+
+  describe(`POST /${fastifyConfig.register.prefix}/my-item/${itemNameNew} item limit`, () => {
+    it('checks the item limit for the current user before creating a new item', async () => {
+      await service.inject({
+        method: 'POST',
+        url: `/${fastifyConfig.register.prefix}/my-item/${itemNameNew}`,
+        payload: { content: {} },
+      })
+
+      expect(assertUserCanCreateItem).toHaveBeenCalledWith({
+        userId: userId0,
+      })
+    })
+
+    it('fails with 422 when the limit is reached', async () => {
+      jest.mocked(assertUserCanCreateItem).mockRejectedValue(
+        UnprocessableContentError({
+          message: errorMessages.itemLimitExceeded(2000),
+        }),
+      )
+
+      const response = await service.inject({
+        method: 'POST',
+        url: `/${fastifyConfig.register.prefix}/my-item/${itemNameNew}`,
+        payload: { content: {} },
+      })
+
+      expect(response.statusCode).toBe(422)
+
+      const body = JSON.parse(response.body)
+      expect(body.error).toEqual(errorMessages.itemLimitExceeded(2000))
+    })
+  })
+
+  describe(`POST /${fastifyConfig.register.prefix}/my-item/${itemName0} item limit`, () => {
+    it('does not check the item limit when upserting an existing item', async () => {
+      await service.inject({
+        method: 'POST',
+        url: `/${fastifyConfig.register.prefix}/my-item/${itemName0}`,
+        payload: { content: {} },
+      })
+
+      expect(assertUserCanCreateItem).not.toHaveBeenCalled()
+    })
+
+    it('succeeds even when the limit is reached, since it is a no-op upsert', async () => {
+      jest.mocked(assertUserCanCreateItem).mockRejectedValue(
+        UnprocessableContentError({
+          message: errorMessages.itemLimitExceeded(2000),
+        }),
+      )
+
+      const response = await service.inject({
+        method: 'POST',
+        url: `/${fastifyConfig.register.prefix}/my-item/${itemName0}`,
+        payload: { content: { desc: 'unchanged' } },
+      })
+
+      expect(response.statusCode).toBe(201)
     })
   })
 

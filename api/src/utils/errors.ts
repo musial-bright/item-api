@@ -8,6 +8,7 @@ export const errorMessages = {
   unauthorized: 'unauthorized',
   missingPermission: (permission: string) =>
     `missing permission '${permission}'`,
+  itemLimitExceeded: (limit: number) => `item limit of ${limit} items reached`,
 }
 
 export const NotFoundError = ({ message }: { message?: string }) => {

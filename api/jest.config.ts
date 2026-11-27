@@ -7,7 +7,6 @@ export default {
   transform: {
     '^.+\\.ts?$': 'ts-jest',
   },
-  setupFiles: ['<rootDir>/src/tests/jest.setupEnv.ts'],
   clearMocks: true,
   collectCoverage: true,
   coverageDirectory: 'coverage',

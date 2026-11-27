@@ -23,7 +23,11 @@ const currentUserStandard: CurrentUserType = {
   },
 }
 
-type CurrentUserFixtureRoles = 'no-teams'
+// 'administrator' has no distinct behavior yet - item-api has no team-based
+// authorization (unlike its IAM-team-aware counterpart) - it only exists so
+// callers can express intent (e.g. in configRoute tests) without failing the
+// type check.
+type CurrentUserFixtureRoles = 'no-teams' | 'administrator'
 
 export const currentUserFixture = (
   role: CurrentUserFixtureRoles = 'no-teams',

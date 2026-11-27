@@ -16,6 +16,7 @@ import {
 } from '../utils/errors'
 import Item from '../entities/Item'
 import { getCurrentUser } from '../decorator/currentUser'
+import { assertUserCanCreateItem } from '../service/itemLimitService'
 import { getFilterExpressions } from '../utils/requestFilter'
 import { orderItems } from '../utils/requestOrder'
 import { getRequestContinuation } from '../utils/requestContinuation'
@@ -124,6 +125,8 @@ const routes = async (fastify: FastifyInstance, _options: any) => {
       const { name } = request.params as Record<string, string>
       // eslint-disable-next-line  @typescript-eslint/no-explicit-any
       const body = request.body as Record<string, any>
+
+      await assertUserCanCreateItem({ userId: currentUser.identifier })
 
       const item = new Item(name)
       const result = await item.create({

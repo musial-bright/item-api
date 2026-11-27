@@ -12,13 +12,18 @@ import {
 import GenericResourceMock from '../__helpers__/GenericResourceMock'
 import { currentUserFixture } from '../__fixtures__/currentUserFixture'
 import GenericResource from '../../entities/GenericResource'
-import { errorMessages } from '../../utils/errors'
+import { errorMessages, UnprocessableContentError } from '../../utils/errors'
+import { assertUserCanCreateItem } from '../../service/itemLimitService'
 
 jest.mock('../../config/variableConfig', () => {
   return {
     currentEnvironment: jest.fn().mockReturnValue('test'),
   }
 })
+
+jest.mock('../../service/itemLimitService', () => ({
+  assertUserCanCreateItem: jest.fn(),
+}))
 
 jest.mock('../../service/authorizationService', () => {
   const original = jest.requireActual<
@@ -162,6 +167,8 @@ let resourceMock: GenericResourceMock = new GenericResourceMock({
 })
 
 beforeAll(() => {
+  jest.mocked(assertUserCanCreateItem).mockResolvedValue(undefined)
+
   jest
     .spyOn(GenericResource.prototype, 'queryBy')
     .mockImplementation(
@@ -354,6 +361,39 @@ describe('routes', () => {
       expect(bodyGet.created_at).not.toBe(undefined)
       expect(bodyGet.updated_at).not.toBe(undefined)
       expect(bodyGet.created_at).toEqual(bodyGet.updated_at)
+    })
+  })
+
+  describe(`POST /${fastifyConfig.register.prefix}/item/${itemName0} item limit`, () => {
+    it('checks the item limit for the current user before creating', async () => {
+      await service.inject({
+        method: 'POST',
+        url: `/${fastifyConfig.register.prefix}/item/${itemName0}`,
+        payload: { content: {} },
+      })
+
+      expect(assertUserCanCreateItem).toHaveBeenCalledWith({
+        userId: userId0,
+      })
+    })
+
+    it('fails with 422 and does not create the item when the limit is reached', async () => {
+      jest.mocked(assertUserCanCreateItem).mockRejectedValueOnce(
+        UnprocessableContentError({
+          message: errorMessages.itemLimitExceeded(2000),
+        }),
+      )
+
+      const response = await service.inject({
+        method: 'POST',
+        url: `/${fastifyConfig.register.prefix}/item/${itemName0}`,
+        payload: { content: {} },
+      })
+
+      expect(response.statusCode).toBe(422)
+
+      const body = JSON.parse(response.body)
+      expect(body.error).toEqual(errorMessages.itemLimitExceeded(2000))
     })
   })
 

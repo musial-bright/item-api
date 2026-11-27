@@ -58,6 +58,7 @@ class GenericResource {
     filterExpressions,
     continuation,
     limitUseWithCaution,
+    select,
   }: QueryByType): Promise<QueryByResultType> {
     const queryCommand = createQuery({
       tableName: this.tableName,
@@ -68,6 +69,7 @@ class GenericResource {
         ? convertContinuationTokenToLastEvaluatedKey(continuation)
         : undefined,
       limitUseWithCaution,
+      select,
     })
 
     const command = new QueryCommand(queryCommand)
@@ -75,6 +77,7 @@ class GenericResource {
 
     const result: QueryByResultType = {
       items: response.Items,
+      count: response.Count,
     }
 
     if (response.LastEvaluatedKey) {

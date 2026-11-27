@@ -22,6 +22,7 @@ export interface CreateQueryInterface {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   exclusiveStartKey?: Record<string, any>
   limitUseWithCaution?: number
+  select?: 'COUNT'
 }
 
 const Defaults = {
@@ -37,6 +38,7 @@ export const createQuery = ({
   filterExpressions,
   exclusiveStartKey,
   limitUseWithCaution,
+  select,
 }: CreateQueryInterface) => {
   const expressionAttributeNames: Record<string, string> = {}
   const expressionAttributeValues: Record<string, AttrValueType> = {}
@@ -91,6 +93,7 @@ export const createQuery = ({
     ExpressionAttributeValues: expressionAttributeValues,
     ExclusiveStartKey: exclusiveStartKey,
     Limit: limitUseWithCaution,
+    Select: select,
   }
 
   return queryCommand

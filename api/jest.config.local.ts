@@ -22,7 +22,7 @@ export default {
     ],
   },
   testEnvironment: 'node',
-  setupFiles: ['dotenv/config'],
+  setupFiles: ['dotenv/config', '<rootDir>/src/tests/jest.setupLocalEnv.ts'],
   clearMocks: true,
   collectCoverage: true,
   coverageDirectory: 'coverage',
